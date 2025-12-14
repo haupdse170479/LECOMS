@@ -66,5 +66,11 @@ namespace LECOMS.ServiceContract.Interfaces
         /// - Hoàn lại stock sản phẩm
         /// </summary>
         Task<OrderDTO> CancelOrderAsync(string orderId, string userId, string cancelReason);
+
+        /// <summary>
+        /// Xem trước thông tin checkout từ giỏ hàng
+        /// </summary>
+        Task<PreviewCheckoutResultDTO> PreviewCheckoutFromCartAsync(string userId, CheckoutRequestDTO checkout
+    );
     }
 }

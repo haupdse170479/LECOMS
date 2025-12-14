@@ -21,15 +21,18 @@ namespace LECOMS.API.Controllers
         private readonly IOrderService _orderService;
         private readonly IPaymentService _paymentService;
         private readonly UserManager<User> _userManager;
+        private readonly ILogger<OrdersController> _logger;
 
         public OrdersController(
             IOrderService orderService,
             IPaymentService paymentService,
-            UserManager<User> userManager)
+            UserManager<User> userManager,
+            ILogger<OrdersController> logger)
         {
             _orderService = orderService;
             _paymentService = paymentService;
             _userManager = userManager;
+            _logger = logger;
         }
 
         // =====================================================================
@@ -306,6 +309,34 @@ namespace LECOMS.API.Controllers
                 response.ErrorMessages.Add(ex.Message);
                 return StatusCode(500, response);
             }
+        }
+
+        // POST: api/orders/checkout/preview
+        [HttpPost("checkout/preview")]
+        [Authorize] // hoặc [Authorize(Roles="Customer")] tùy project bạn
+        public async Task<IActionResult> PreviewCheckout([FromBody] CheckoutRequestDTO dto)
+        {
+            var response = new APIResponse();
+
+            try
+            {
+                var userId = User.FindFirstValue(ClaimTypes.NameIdentifier)
+                    ?? throw new UnauthorizedAccessException("UserId not found.");
+
+                var result = await _orderService.PreviewCheckoutFromCartAsync(userId, dto);
+
+                response.Result = result;
+                response.StatusCode = HttpStatusCode.OK;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "PreviewCheckout failed");
+                response.IsSuccess = false;
+                response.ErrorMessages.Add(ex.Message);
+                response.StatusCode = HttpStatusCode.BadRequest;
+            }
+
+            return StatusCode((int)response.StatusCode, response);
         }
 
         // DTO for cancel request

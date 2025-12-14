@@ -913,5 +913,237 @@ namespace LECOMS.Service.Services
             var rnd = new Random().Next(100, 999);
             return $"ORD{ts}{rnd}";
         }
+
+        public async Task<PreviewCheckoutResultDTO> PreviewCheckoutFromCartAsync(
+            string userId,
+            CheckoutRequestDTO checkout)
+        {
+            // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+            // STEP 1: Validate địa chỉ giao hàng (GHN format)
+            // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+            if (checkout.ToDistrictId <= 0)
+                throw new InvalidOperationException("Vui lòng chọn Quận/Huyện giao hàng.");
+
+            if (string.IsNullOrWhiteSpace(checkout.ToWardCode))
+                throw new InvalidOperationException("Vui lòng chọn Phường/Xã giao hàng.");
+
+            if (checkout.ServiceTypeId <= 0)
+                throw new InvalidOperationException("ServiceTypeId không hợp lệ.");
+
+            // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+            // STEP 2: Load cart
+            // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+            var cart = await _uow.Carts.GetByUserIdAsync(
+                userId,
+                includeProperties: "Items,Items.Product,Items.Product.Images,Items.Product.Category,Items.Product.Shop");
+
+            if (cart == null || !cart.Items.Any())
+                throw new InvalidOperationException("Giỏ hàng trống.");
+
+            // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+            // STEP 3: Filter selectedProductIds
+            // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+            var selectedItems =
+                (checkout.SelectedProductIds?.Any() ?? false)
+                    ? cart.Items.Where(i => checkout.SelectedProductIds.Contains(i.ProductId)).ToList()
+                    : cart.Items.ToList();
+
+            if (!selectedItems.Any())
+                throw new InvalidOperationException("Không có sản phẩm nào được chọn.");
+
+            // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+            // STEP 4: Validate không mua shop của mình
+            // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+            var userShopIds = selectedItems
+                .Select(i => i.Product.ShopId)
+                .Distinct()
+                .ToList();
+
+            foreach (var shopId in userShopIds)
+            {
+                var shopCheck = await _uow.Shops.GetAsync(s => s.Id == shopId);
+                if (shopCheck != null && shopCheck.SellerId == userId)
+                {
+                    throw new InvalidOperationException(
+                        $"Bạn không thể mua sản phẩm từ shop '{shopCheck.Name}' của chính mình.");
+                }
+            }
+
+            // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+            // STEP 5: Group theo shop và tính preview
+            // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+            var grouped = selectedItems.GroupBy(i => i.Product.ShopId).ToList();
+
+            var previewOrders = new List<PreviewShopOrderDTO>();
+            var tempOrdersForVoucher = new List<Order>(); // dùng lại voucher service không cần sửa
+
+            foreach (var group in grouped)
+            {
+                int shopId = group.Key;
+                var items = group.ToList();
+
+                var shop = await _uow.Shops.GetAsync(s => s.Id == shopId)
+                    ?? throw new InvalidOperationException($"Shop {shopId} không tồn tại.");
+
+                if (!shop.IsGHNConnected)
+                    throw new InvalidOperationException($"Shop '{shop.Name}' chưa kết nối GHN.");
+
+                // Lấy địa chỉ kho (ShopAddress) để làm FROM địa chỉ tính ship
+                var shopAddress = await _uow.ShopAddresses.GetAsync(
+                    sa => sa.ShopId == shopId && sa.IsDefault,
+                    includeProperties: "Shop");
+
+                if (shopAddress == null)
+                    throw new InvalidOperationException(
+                        $"Shop '{shop.Name}' chưa thiết lập địa chỉ kho. Không thể tính phí vận chuyển.");
+
+                // 5.1 Tính subtotal + weight + dimension
+                decimal subtotal = 0;
+                int totalWeight = 0;
+                int? maxLength = null;
+                int? maxWidth = null;
+                int? maxHeight = null;
+
+                foreach (var item in items)
+                {
+                    // validate stock (preview vẫn check để user biết không đủ hàng)
+                    if (item.Product.Stock < item.Quantity)
+                    {
+                        throw new InvalidOperationException(
+                            $"Sản phẩm '{item.Product.Name}' không đủ hàng. Còn {item.Product.Stock}, bạn đặt {item.Quantity}.");
+                    }
+
+                    subtotal += item.Product.Price * item.Quantity;
+
+                    int productWeight = item.Product.Weight > 0 ? item.Product.Weight : 500;
+                    totalWeight += productWeight * item.Quantity;
+
+                    if (item.Product.Length.HasValue && item.Product.Length.Value > (maxLength ?? 0))
+                        maxLength = item.Product.Length;
+                    if (item.Product.Width.HasValue && item.Product.Width.Value > (maxWidth ?? 0))
+                        maxWidth = item.Product.Width;
+                    if (item.Product.Height.HasValue && item.Product.Height.Value > (maxHeight ?? 0))
+                        maxHeight = item.Product.Height;
+                }
+
+                // 5.2 Call GHN để tính ship
+                var shipping = await _shippingService.GetShippingDetailsAsync(
+                    ghnToken: shop.GHNToken!,
+                    ghnShopId: shop.GHNShopId!,
+                    fromDistrictId: shopAddress.DistrictId,
+                    fromWardCode: shopAddress.WardCode,
+                    toDistrictId: checkout.ToDistrictId,
+                    toWardCode: checkout.ToWardCode,
+                    weight: totalWeight,
+                    orderValue: subtotal,
+                    serviceTypeId: checkout.ServiceTypeId,
+                    length: maxLength,
+                    width: maxWidth,
+                    height: maxHeight
+                );
+
+                if (shipping == null)
+                    throw new InvalidOperationException(
+                        $"Không thể tính phí vận chuyển cho shop '{shop.Name}'.");
+
+                // 5.3 Build preview dto
+                var previewId = Guid.NewGuid().ToString();
+
+                var previewDto = new PreviewShopOrderDTO
+                {
+                    PreviewOrderId = previewId,
+                    ShopId = shopId,
+                    ShopName = shop.Name,
+                    Subtotal = subtotal,
+                    ShippingFee = shipping.ShippingFee,
+                    Discount = 0,
+                    Total = subtotal + shipping.ShippingFee,
+                    TotalWeight = totalWeight,
+                    EstimatedDeliveryText = shipping.ExpectedDeliveryTime,
+                    Items = items.Select(i => new PreviewOrderItemDTO
+                    {
+                        ProductId = i.ProductId,
+                        ProductName = i.Product.Name,
+                        ProductImage = i.Product.Images?.FirstOrDefault(img => img.IsPrimary)?.Url,
+                        Quantity = i.Quantity,
+                        UnitPrice = i.Product.Price
+                    }).ToList()
+                };
+
+                previewOrders.Add(previewDto);
+
+                // 5.4 Build temp Order để reuse VoucherService
+                tempOrdersForVoucher.Add(new Order
+                {
+                    Id = previewId,
+                    ShopId = shopId,
+                    UserId = userId,
+                    Subtotal = subtotal,
+                    ShippingFee = shipping.ShippingFee,
+                    Discount = 0,
+                    Total = subtotal + shipping.ShippingFee,
+                    VoucherCodeUsed = null
+                });
+            }
+
+            // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+            // STEP 6: Apply voucher (nếu có)
+            // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+            var voucherCode = (checkout.VoucherCode ?? string.Empty).Trim();
+            string? voucherCodeUsed = null;
+
+            if (!string.IsNullOrWhiteSpace(voucherCode))
+            {
+                var voucherResult = await _voucherService.ValidateAndPreviewAsync(
+                    userId,
+                    voucherCode,
+                    tempOrdersForVoucher);
+
+                if (voucherResult == null || !voucherResult.IsValid)
+                    throw new InvalidOperationException(voucherResult?.ErrorMessage ?? "Voucher không hợp lệ.");
+
+                voucherCodeUsed = voucherCode;
+
+                foreach (var po in previewOrders)
+                {
+                    var discount = voucherResult.OrderDiscounts
+                        .FirstOrDefault(x => x.OrderId == po.PreviewOrderId)?.DiscountAmount ?? 0m;
+
+                    po.Discount = discount;
+                    po.Total = po.Subtotal + po.ShippingFee - po.Discount;
+                }
+            }
+
+            // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+            // STEP 7: Sum totals
+            // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+            decimal totalShipping = previewOrders.Sum(o => o.ShippingFee);
+            decimal totalDiscount = previewOrders.Sum(o => o.Discount);
+            decimal grandTotal = previewOrders.Sum(o => o.Total);
+
+            return new PreviewCheckoutResultDTO
+            {
+                Orders = previewOrders,
+
+                TotalAmount = grandTotal,
+                ShippingFee = totalShipping,
+                DiscountApplied = totalDiscount,
+                VoucherCodeUsed = voucherCodeUsed,
+                ServiceTypeId = checkout.ServiceTypeId,
+
+                ShipToName = checkout.ShipToName,
+                ShipToPhone = checkout.ShipToPhone,
+                ShipToAddress = checkout.ShipToAddress,
+
+                ToProvinceId = checkout.ToProvinceId ?? 0,
+                ToProvinceName = checkout.ToProvinceName,
+                ToDistrictId = checkout.ToDistrictId,
+                ToDistrictName = checkout.ToDistrictName,
+                ToWardCode = checkout.ToWardCode,
+                ToWardName = checkout.ToWardName,
+                Note = checkout.Note
+            };
+        }
     }
 }
+
