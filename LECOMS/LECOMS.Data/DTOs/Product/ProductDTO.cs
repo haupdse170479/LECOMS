@@ -30,6 +30,9 @@ namespace LECOMS.Data.DTOs.Product
         // ⭐ THÊM 2 CÁI NÀY
         public ApprovalStatus ApprovalStatus { get; set; }
         public string? ModeratorNote { get; set; }
+        // ⭐⭐ THÊM CHỖ NÀY
+        public double AverageRating { get; set; }   // vd: 1.4
+        public int RatingCount { get; set; }         // vd: 12
 
     }
 }

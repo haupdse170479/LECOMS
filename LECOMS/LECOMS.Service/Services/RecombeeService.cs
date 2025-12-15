@@ -27,6 +27,50 @@ namespace LECOMS.Service.Services
             _uow = uow;
             _mapper = mapper;
         }
+        private static ProductDTO MapProduct(Product p)
+        {
+            return new ProductDTO
+            {
+                Id = p.Id,
+                Name = p.Name,
+                Slug = p.Slug,
+                Description = p.Description,
+
+                CategoryId = p.CategoryId,
+                CategoryName = p.Category?.Name,
+
+                Price = p.Price,
+                Stock = p.Stock,
+                Status = p.Status,
+                LastUpdatedAt = p.LastUpdatedAt,
+
+                Images = p.Images.Select(i => new ProductImageDTO
+                {
+                    Url = i.Url,
+                    OrderIndex = i.OrderIndex,
+                    IsPrimary = i.IsPrimary
+                }).ToList(),
+
+                ThumbnailUrl = p.Images
+                    .OrderBy(i => i.OrderIndex)
+                    .Select(i => i.Url)
+                    .FirstOrDefault(),
+
+                ShopId = p.ShopId,
+                ShopName = p.Shop?.Name,
+                ShopAvatar = p.Shop?.ShopAvatar,
+                ShopDescription = p.Shop?.Description,
+
+                ApprovalStatus = p.ApprovalStatus,
+                ModeratorNote = p.ModeratorNote,
+
+                // ⭐ RATING
+                RatingCount = p.Feedbacks.Count,
+                AverageRating = p.Feedbacks.Any()
+                    ? Math.Round(p.Feedbacks.Average(f => f.Rating), 1)
+                    : 0
+            };
+        }
 
         // ===========================================================================
         // 1️⃣ SYNC PRODUCTS TO RECOMBEE
@@ -119,6 +163,7 @@ namespace LECOMS.Service.Services
                 .Include(p => p.Images)
                 .Include(p => p.Category)
                 .Include(p => p.Shop)
+                .Include(p => p.Feedbacks)
                 .Where(p => recIds.Contains(p.Id))
                 .ToListAsync();
 
@@ -144,14 +189,15 @@ namespace LECOMS.Service.Services
                 .Include(p => p.Images)
                 .Include(p => p.Category)
                 .Include(p => p.Shop)
+                .Include(p => p.Feedbacks)
                 .Where(p => bestIds.Contains(p.Id))
                 .ToListAsync();
 
             return new BrowseResultDTO
             {
-                RecommendedProducts = _mapper.Map<IEnumerable<ProductDTO>>(recommendedProducts),
+                RecommendedProducts = recommendedProducts.Select(MapProduct).ToList(),
                 RecommendedCategories = recommendedCategories,
-                BestSellerProducts = _mapper.Map<IEnumerable<ProductDTO>>(bestSellerProducts)
+                BestSellerProducts = bestSellerProducts.Select(MapProduct).ToList()
             };
         }
 
@@ -171,6 +217,7 @@ namespace LECOMS.Service.Services
                 .Include(p => p.Images)
                 .Include(p => p.Category)
                 .Include(p => p.Shop)
+                .Include(p => p.Feedbacks)
                 .Where(p =>
                     ids.Contains(p.Id) &&
                     p.Active == 1 &&
@@ -179,7 +226,7 @@ namespace LECOMS.Service.Services
                 )
                 .ToListAsync();
 
-            return _mapper.Map<IEnumerable<ProductDTO>>(products);
+            return products.Select(MapProduct).ToList();
         }
 
         // ===========================================================================
@@ -217,10 +264,11 @@ namespace LECOMS.Service.Services
                 .Include(p => p.Images)
                 .Include(p => p.Category)
                 .Include(p => p.Shop)
+                .Include(p => p.Feedbacks)
                 .Where(p => ids.Contains(p.Id))
                 .ToListAsync();
 
-            return _mapper.Map<IEnumerable<ProductDTO>>(products);
+            return products.Select(MapProduct).ToList();
         }
 
         // ===========================================================================
@@ -263,6 +311,7 @@ namespace LECOMS.Service.Services
                 .Include(p => p.Images)
                 .Include(p => p.Category)
                 .Include(p => p.Shop)
+                .Include(p => p.Feedbacks)
                 .Where(p => recIds.Contains(p.Id))
                 .ToListAsync();
 
@@ -272,12 +321,14 @@ namespace LECOMS.Service.Services
                     .Include(p => p.Images)
                     .Include(p => p.Category)
                     .Include(p => p.Shop)
+                    .Include(p => p.Feedbacks)
                     .OrderByDescending(p => p.LastUpdatedAt)
                     .Take(20)
                     .ToListAsync();
             }
 
-            var recommendedProductsDto = _mapper.Map<IEnumerable<ProductDTO>>(recommendedProducts);
+            var recommendedProductsDto =
+                recommendedProducts.Select(MapProduct).ToList();
 
             // --------------------------------------------------
             // 2) Recommended categories (group theo category)
@@ -289,7 +340,7 @@ namespace LECOMS.Service.Services
                     id = g.Key,
                     name = g.First().Category.Name,
                     slug = g.First().Category.Slug,
-                    products = _mapper.Map<IEnumerable<ProductDTO>>(g.Take(8))
+                    products = g.Take(8).Select(MapProduct).ToList()
                 })
                 .ToList();
 
@@ -307,10 +358,12 @@ namespace LECOMS.Service.Services
                 .Include(p => p.Images)
                 .Include(p => p.Category)
                 .Include(p => p.Shop)
+                .Include(p => p.Feedbacks)
                 .Where(p => bestIds.Contains(p.Id))
                 .ToListAsync();
 
-            var bestSellerDto = _mapper.Map<IEnumerable<ProductDTO>>(bestSeller);
+            var bestSellerDto =
+                bestSeller.Select(MapProduct).ToList();
 
             // --------------------------------------------------
             // 4) Trending (7 ngày gần nhất)
@@ -328,10 +381,12 @@ namespace LECOMS.Service.Services
                 .Include(p => p.Images)
                 .Include(p => p.Category)
                 .Include(p => p.Shop)
+                .Include(p => p.Feedbacks)
                 .Where(p => trendingIds.Contains(p.Id))
                 .ToListAsync();
 
-            var trendingDto = _mapper.Map<IEnumerable<ProductDTO>>(trendingProducts);
+            var trendingDto =
+                trendingProducts.Select(MapProduct).ToList();
 
             // --------------------------------------------------
             // 5) New Arrivals (sản phẩm mới nhất)
@@ -340,11 +395,13 @@ namespace LECOMS.Service.Services
                 .Include(p => p.Images)
                 .Include(p => p.Category)
                 .Include(p => p.Shop)
+                .Include(p => p.Feedbacks)
                 .OrderByDescending(p => p.LastUpdatedAt)
                 .Take(12)
                 .ToListAsync();
 
-            var newArrivalDto = _mapper.Map<IEnumerable<ProductDTO>>(newArrival);
+            var newArrivalDto =
+                newArrival.Select(MapProduct).ToList();
 
             // --------------------------------------------------
             // FINAL RESPONSE

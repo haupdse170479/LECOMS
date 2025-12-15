@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Linq;
+using System.Reflection.Emit;
 
 namespace LECOMS.Data.Models
 {
@@ -574,6 +575,11 @@ namespace LECOMS.Data.Models
                  .HasForeignKey(sa => sa.ShopId)
                  .OnDelete(DeleteBehavior.Cascade);  // Xóa shop → xóa address
             });
+            b.Entity<Feedback>()
+             .HasOne(f => f.Product)
+            .WithMany(p => p.Feedbacks)
+            .HasForeignKey(f => f.ProductId)
+            .OnDelete(DeleteBehavior.Cascade);
 
         }
     }

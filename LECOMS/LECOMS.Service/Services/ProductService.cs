@@ -49,7 +49,7 @@ namespace LECOMS.Service.Services
         {
             var product = await _uow.Products.GetAsync(
                 p => p.Id == id,
-                includeProperties: "Category,Images,Shop"
+                includeProperties: "Category,Images,Shop,Feedback"
             );
 
             if (product == null)
@@ -229,6 +229,8 @@ namespace LECOMS.Service.Services
                 .Include(p => p.Category)
                 .Include(p => p.Images)
                 .Include(p => p.Shop)
+                .Include(p => p.Feedbacks)
+                // ⭐⭐ THÊM DÒNG NÀY
                 .Where(p =>
                     p.Active == 1 &&
                     p.Status == ProductStatus.Published &&      // FE muốn xem product đã publish
@@ -273,7 +275,46 @@ namespace LECOMS.Service.Services
                 .Take(pageSize)
                 .ToListAsync();
 
-            var items = _mapper.Map<IEnumerable<ProductDTO>>(products);
+            var items = products.Select(p => new ProductDTO
+            {
+                Id = p.Id,
+                Name = p.Name,
+                Slug = p.Slug,
+                Description = p.Description,
+
+                CategoryId = p.CategoryId,
+                CategoryName = p.Category.Name,
+
+                Price = p.Price,
+                Stock = p.Stock,
+                Status = p.Status,
+                LastUpdatedAt = p.LastUpdatedAt,
+
+                Images = p.Images.Select(i => new ProductImageDTO
+                {
+                    Url = i.Url,
+                    OrderIndex = i.OrderIndex,
+                    IsPrimary = i.IsPrimary
+                }).ToList(),
+
+                ThumbnailUrl = p.Images
+                    .OrderBy(i => i.OrderIndex)
+                    .Select(i => i.Url)
+                    .FirstOrDefault(),
+
+                ShopId = p.ShopId,
+                ShopName = p.Shop.Name,
+                ShopAvatar = p.Shop.ShopAvatar,
+                ShopDescription = p.Shop.Description,
+
+                ApprovalStatus = p.ApprovalStatus,
+                ModeratorNote = p.ModeratorNote,
+
+                // ⭐⭐ RATING Ở ĐÂY
+                RatingCount = p.Feedbacks.Count,
+                AverageRating = p.Feedbacks.Any()
+    ? Math.Round(p.Feedbacks.Average(f => f.Rating), 1)
+    : 0     });
 
             return new
             {
