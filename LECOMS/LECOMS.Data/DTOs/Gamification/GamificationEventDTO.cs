@@ -10,5 +10,7 @@
 
         /// <summary>Id liên quan: lessonId, courseId, orderId, reviewId...</summary>
         public string? ReferenceId { get; set; }
+        public int? Amount { get; set; }   // tổng tiền
+
     }
 }

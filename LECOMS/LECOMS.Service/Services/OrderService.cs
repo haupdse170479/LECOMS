@@ -240,7 +240,8 @@ namespace LECOMS.Service.Services
                     await _gamification.HandleEventAsync(userId, new GamificationEventDTO
                     {
                         Action = "PurchaseProduct", // phải trùng EarnRule.Action + QuestDefinition.Code
-                        ReferenceId = string.Join(",", createdOrders.Select(o => o.Id))
+                        ReferenceId = string.Join(",", createdOrders.Select(o => o.Id)),
+                        Amount = (int)createdOrders.Sum(o => o.Total) // ⭐ tổng tiền
                     });
                 }
 

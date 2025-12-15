@@ -256,7 +256,10 @@ namespace LECOMS.Service.Services
             wallet.Balance += rule.Points;
             wallet.LifetimeEarned += rule.Points;
             wallet.CurrentXP += rule.Points;
-
+            // ⭐ Spend
+            if (dto.Amount.HasValue)
+                wallet.LifetimeSpent += dto.Amount.Value;
+    
             await LevelUpIfNeeded(wallet);
 
             // 4. Ghi ledger
@@ -271,30 +274,41 @@ namespace LECOMS.Service.Services
             });
 
             // 5. Update quests liên quan (QuestDefinition.Code = Action)
-            await UpdateUserQuestsOnEvent(userId, dto.Action);
+            await UpdateUserQuestsOnEvent(userId, dto.Action, dto.Amount);
 
             // 6. Update leaderboard
-            await UpdateLeaderboardsOnEvent(userId, rule.Points);
+            await UpdateLeaderboardsOnEvent(userId, rule.Points, dto.Amount);
 
             await _uow.PointWallets.UpdateAsync(wallet);
             await _uow.CompleteAsync();
         }
 
-        private async Task UpdateUserQuestsOnEvent(string userId, string action)
+        private async Task UpdateUserQuestsOnEvent(
+            string userId,
+            string action,
+            int? amount = null
+        )
         {
             var now = DateTime.UtcNow;
 
             var progresses = await _uow.UserQuestProgresses.GetAllAsync(
                 q => q.UserId == userId
-                     && q.PeriodStart <= now && q.PeriodEnd >= now
+                     && q.PeriodStart <= now
+                     && q.PeriodEnd >= now
                      && q.Quest.Code == action,
-                includeProperties: "Quest");
+                includeProperties: "Quest"
+            );
 
             foreach (var p in progresses)
             {
                 if (p.IsCompleted) continue;
 
-                p.CurrentValue += 1;
+                // ⭐ PHÂN BIỆT
+                if (p.Quest.TargetValue > 1000) // quest tiền
+                    p.CurrentValue += amount ?? 0;
+                else
+                    p.CurrentValue += 1;
+
                 if (p.CurrentValue >= p.Quest.TargetValue)
                 {
                     p.CurrentValue = p.Quest.TargetValue;
@@ -305,7 +319,8 @@ namespace LECOMS.Service.Services
             }
         }
 
-        private async Task UpdateLeaderboardsOnEvent(string userId, int deltaScore)
+
+        private async Task UpdateLeaderboardsOnEvent(string userId, int deltaScore, int? amount = null)
         {
             var now = DateTime.UtcNow;
 
@@ -323,6 +338,8 @@ namespace LECOMS.Service.Services
                 DateTime.MinValue, DateTime.MaxValue
             );
             await AddScoreToLeaderboard(monthlyLb, userId, deltaScore);
+            var score = amount ?? deltaScore;
+            await AddScoreToLeaderboard(allLb, userId, score);
         }
 
         private async Task<Leaderboard> GetOrCreateLeaderboardAsync(string code, string period, DateTime start, DateTime end)
@@ -376,9 +393,15 @@ namespace LECOMS.Service.Services
         }
 
 
-        private async Task AddScoreToLeaderboard(Leaderboard lb, string userId, int delta)
+        private async Task AddScoreToLeaderboard(
+            Leaderboard lb,
+            string userId,
+            int delta
+        )
         {
-            var entry = await _uow.LeaderboardEntries.GetByLeaderboardAndUserAsync(lb.Id, userId);
+            var entry = await _uow.LeaderboardEntries
+                .GetByLeaderboardAndUserAsync(lb.Id, userId);
+
             if (entry == null)
             {
                 entry = new LeaderboardEntry
@@ -397,9 +420,7 @@ namespace LECOMS.Service.Services
                 await _uow.LeaderboardEntries.UpdateAsync(entry);
             }
 
-            await _uow.CompleteAsync();
-
-            // Recalculate rank
+            // 🔁 Recalculate rank
             var entries = _uow.LeaderboardEntries.Query()
                 .Where(e => e.LeaderboardId == lb.Id)
                 .OrderByDescending(e => e.Score)
@@ -409,8 +430,10 @@ namespace LECOMS.Service.Services
             foreach (var e in entries)
             {
                 e.Rank = rank++;
-                _uow.LeaderboardEntries.UpdateAsync(e);
+                await _uow.LeaderboardEntries.UpdateAsync(e);
             }
+
+            // ✅ Commit 1 lần duy nhất
             await _uow.CompleteAsync();
         }
 
