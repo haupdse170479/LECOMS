@@ -448,12 +448,30 @@ namespace LECOMS.Service.Services
                     walletUsed = grandTotal;
                     payOSRequired = 0;
 
-                    // ⭐ Gamification Event
+                    // ⭐ Gamification Event – mua hàng cơ bản
                     await _gamification.HandleEventAsync(userId, new GamificationEventDTO
                     {
-                        Action = "PurchaseProduct", // phải trùng EarnRule.Action + QuestDefinition.Code
+                        Action = "PurchaseProduct",
+                        Amount = (int)grandTotal,
                         ReferenceId = string.Join(",", createdOrders.Select(o => o.Id))
                     });
+
+                    // ⭐ BIG ORDER
+                    if (grandTotal >= 1_000_000)
+                    {
+                        await _gamification.HandleEventAsync(userId, new GamificationEventDTO
+                        {
+                            Action = "PurchaseBigOrder",
+                            Amount = (int)grandTotal,
+                            ReferenceId = string.Join(",", createdOrders.Select(o => o.Id))
+                        });
+                    }
+
+                    // ⭐ ACHIEVEMENT – CHI TIÊU
+                    await _achievement.IncreaseProgressAsync(userId, "ACH_SPEND_1M", (int)grandTotal);
+                    await _achievement.IncreaseProgressAsync(userId, "ACH_SPEND_5M", (int)grandTotal);
+
+
 
                     _logger.LogInformation("✅ Paid by WALLET: {Amount}đ", grandTotal);
                 }
@@ -505,9 +523,9 @@ namespace LECOMS.Service.Services
                 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
                 // STEP 10: Achievements
                 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-                await _achievement.IncreaseProgressAsync(userId, "ACHV_FIRST_PURCHASE", 1);
-                await _achievement.IncreaseProgressAsync(userId, "ACHV_5_PURCHASES", 1);
-                await _achievement.IncreaseProgressAsync(userId, "ACHV_10_PURCHASES", 1);
+                await _achievement.IncreaseProgressAsync(userId, "ACH_BUY_FIRST_ORDER", 1);
+                await _achievement.IncreaseProgressAsync(userId, "ACH_BUY_5_ORDERS", 1);
+                await _achievement.IncreaseProgressAsync(userId, "ACH_BUY_20_ORDERS", 1);
 
                 _logger.LogInformation(
                     "🎉 Checkout completed:  {OrderCount} orders, Total: {Total}đ",
