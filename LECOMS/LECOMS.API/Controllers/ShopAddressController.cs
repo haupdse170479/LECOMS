@@ -113,5 +113,37 @@ namespace LECOMS.API.Controllers
             return StatusCode((int)response.StatusCode, response);
         }
 
+        /// <summary>
+        /// Kiểm tra trạng thái kết nối GHN của shop
+        /// GET: api/shop/address/me/ghn/status
+        /// </summary>
+        [HttpGet("me/ghn/status")]
+        [Authorize]
+        public async Task<IActionResult> GetGHNConnectionStatus()
+        {
+            var response = new APIResponse();
+            try
+            {
+                var sellerId = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
+                var status = await _shopService.GetGHNConnectionStatusAsync(sellerId);
+
+                response.Result = status;
+                response.StatusCode = HttpStatusCode.OK;
+            }
+            catch (InvalidOperationException ex)
+            {
+                response.IsSuccess = false;
+                response.ErrorMessages.Add(ex.Message);
+                response.StatusCode = HttpStatusCode.BadRequest;
+            }
+            catch (Exception ex)
+            {
+                response.IsSuccess = false;
+                response.ErrorMessages.Add(ex.Message);
+                response.StatusCode = HttpStatusCode.InternalServerError;
+            }
+
+            return StatusCode((int)response.StatusCode, response);
+        }
     }
 }

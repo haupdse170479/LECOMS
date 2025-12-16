@@ -18,6 +18,7 @@ namespace LECOMS.ServiceContract.Interfaces
         Task<bool> HasShopAsync(string sellerId);
         Task<object> GetPublicShopDetailAsync(int shopId);
         Task ConnectGHNAsync(string sellerId, ConnectGHNRequestDTO dto);
+        Task<GHNConnectionStatusDTO> GetGHNConnectionStatusAsync(string sellerId);
 
     }
 }

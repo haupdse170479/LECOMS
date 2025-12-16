@@ -80,6 +80,11 @@ namespace LECOMS.Data.Entities
         public string? GHNShopId { get; set; }
 
         /// <summary>
+        /// Thời gian shop kết nối GHN lần cuối
+        /// </summary>
+        public DateTime? GHNConnectedAt { get; set; }
+
+        /// <summary>
         /// Shop đã kết nối GHN hay chưa
         /// </summary>
         [NotMapped]

@@ -311,9 +311,42 @@ namespace LECOMS.Service.Services
 
             shop.GHNToken = dto.GHNToken.Trim();
             shop.GHNShopId = dto.GHNShopId.Trim();
+            shop.GHNConnectedAt = DateTime.UtcNow;
 
             await _uow.Shops.UpdateAsync(shop);
             await _uow.CompleteAsync();
+        }
+
+        /// <summary>
+        /// Kiểm tra trạng thái kết nối GHN của shop
+        /// </summary>
+        public async Task<GHNConnectionStatusDTO> GetGHNConnectionStatusAsync(string sellerId)
+        {
+            var shop = await _uow.Shops.GetAsync(s => s.SellerId == sellerId);
+
+            if (shop == null)
+            {
+                throw new InvalidOperationException("Shop không tồn tại.");
+            }
+
+            var status = new GHNConnectionStatusDTO
+            {
+                IsConnected = shop.IsGHNConnected,
+                GHNShopId = shop.GHNShopId,
+                ConnectedAt = shop.GHNConnectedAt   // Hoặc có thể thêm field mới GHNConnectedAt
+            };
+
+            // Tạo message phù hợp
+            if (shop.IsGHNConnected)
+            {
+                status.Message = $"Shop đã kết nối GHN thành công với Shop ID: {shop.GHNShopId}";
+            }
+            else
+            {
+                status.Message = "Shop chưa kết nối với GHN.  Vui lòng cấu hình để có thể tính phí vận chuyển.";
+            }
+
+            return status;
         }
 
     }
