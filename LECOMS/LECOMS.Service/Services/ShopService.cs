@@ -61,6 +61,12 @@ namespace LECOMS.Service.Services
                     existing.Name = dto.ShopName;
                     existing.Description = dto.ShopDescription;
                     existing.PhoneNumber = dto.ShopPhoneNumber;
+                    existing.ProvinceId = dto.ProvinceId;
+                    existing.ProvinceName = dto.ProvinceName;
+                    existing.DistrictId = dto.DistrictId;
+                    existing.DistrictName = dto.DistrictName;
+                    existing.WardCode = dto.WardCode;
+                    existing.WardName = dto.WardName;
                     existing.Address = dto.ShopAddress;
                     existing.BusinessType = dto.BusinessType;
                     existing.OwnershipDocumentUrl = dto.OwnershipDocumentUrl;
