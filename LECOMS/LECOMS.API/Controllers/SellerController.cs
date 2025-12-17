@@ -304,7 +304,7 @@ namespace LECOMS.API.Controllers
                     response.Result = new
                     {
                         status = "Rejected",
-                        rejectedReason = shop.RejectedReason
+                        rejectedReason = shop.RejectedReason // result.RejectedReason
                     };
                     return Ok(response);
                 }
