@@ -18,6 +18,23 @@ namespace LECOMS.Data.Entities
 
         [Phone]
         public string PhoneNumber { get; set; } = null!;
+        // ===== SHOP DISPLAY ADDRESS (KHÔNG LIÊN QUAN GHN) =====
+
+        public int ProvinceId { get; set; }
+
+        [MaxLength(100)]
+        public string ProvinceName { get; set; } = null!;
+
+        public int DistrictId { get; set; }
+
+        [MaxLength(100)]
+        public string DistrictName { get; set; } = null!;
+
+        [MaxLength(50)]
+        public string WardCode { get; set; } = null!;
+
+        [MaxLength(100)]
+        public string WardName { get; set; } = null!;
 
         [MaxLength(500)]
         public string Address { get; set; } = null!;

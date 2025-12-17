@@ -10,6 +10,7 @@ namespace LECOMS.Data.DTOs.Course
     {
         public string Id { get; set; }
         public string Name { get; set; }
+        public string Slug { get; set; }   // 👈 thêm
         public string? Description { get; set; }
     }
 }

@@ -16,6 +16,14 @@ namespace LECOMS.Data.DTOs.Seller
 
         [Required, MaxLength(500)]
         public string ShopAddress { get; set; }
+        public int ProvinceId { get; set; }
+        public string ProvinceName { get; set; } = null!;
+
+        public int DistrictId { get; set; }
+        public string DistrictName { get; set; } = null!;
+
+        public string WardCode { get; set; } = null!;
+        public string WardName { get; set; } = null!;
 
         public string? BusinessType { get; set; }
         public string? OwnershipDocumentUrl { get; set; }

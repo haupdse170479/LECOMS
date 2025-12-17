@@ -10,7 +10,15 @@ namespace LECOMS.Data.DTOs.Seller
             public string? Description { get; set; }
 
             public string PhoneNumber { get; set; }
-            public string Address { get; set; }
+        public int ProvinceId { get; set; }
+        public string ProvinceName { get; set; } = null!;
+
+        public int DistrictId { get; set; }
+        public string DistrictName { get; set; } = null!;
+
+        public string WardCode { get; set; } = null!;
+        public string WardName { get; set; } = null!;
+        public string Address { get; set; }
 
             public string? BusinessType { get; set; }
             public string? OwnershipDocumentUrl { get; set; }
