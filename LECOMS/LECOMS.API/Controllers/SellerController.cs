@@ -299,7 +299,15 @@ namespace LECOMS.API.Controllers
                     response.Result = new { status = "Pending" };
                     return Ok(response);
                 }
-
+                if (shop.Status == "Rejected")
+                {
+                    response.Result = new
+                    {
+                        status = "Rejected",
+                        rejectedReason = shop.RejectedReason
+                    };
+                    return Ok(response);
+                }
                 if (shop.Status == "Approved")
                 {
                     response.StatusCode = HttpStatusCode.OK;

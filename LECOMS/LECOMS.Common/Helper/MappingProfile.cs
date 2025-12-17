@@ -42,6 +42,13 @@ namespace LECOMS.Common.Helper
                 .ForMember(d => d.Name, o => o.MapFrom(s => s.ShopName))
                 .ForMember(d => d.Description, o => o.MapFrom(s => s.ShopDescription))
                 .ForMember(d => d.PhoneNumber, o => o.MapFrom(s => s.ShopPhoneNumber))
+                // ===== MAP ĐỊA CHỈ SHOP =====
+                .ForMember(dest => dest.ProvinceId, opt => opt.MapFrom(src => src.ProvinceId))
+                .ForMember(dest => dest.ProvinceName, opt => opt.MapFrom(src => src.ProvinceName))
+                .ForMember(dest => dest.DistrictId, opt => opt.MapFrom(src => src.DistrictId))
+                .ForMember(dest => dest.DistrictName, opt => opt.MapFrom(src => src.DistrictName))
+                .ForMember(dest => dest.WardCode, opt => opt.MapFrom(src => src.WardCode))
+                .ForMember(dest => dest.WardName, opt => opt.MapFrom(src => src.WardName))
                 .ForMember(d => d.Address, o => o.MapFrom(s => s.ShopAddress))
                 .ForMember(d => d.BusinessType, o => o.MapFrom(s => s.BusinessType))
                 .ForMember(d => d.OwnershipDocumentUrl, o => o.MapFrom(s => s.OwnershipDocumentUrl))
