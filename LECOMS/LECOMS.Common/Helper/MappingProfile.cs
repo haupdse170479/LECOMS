@@ -66,6 +66,12 @@ namespace LECOMS.Common.Helper
                 .ForMember(d => d.Status, o => o.Ignore())
                 .ForMember(d => d.CreatedAt, o => o.Ignore())
                 .ForMember(d => d.ApprovedAt, o => o.Ignore());
+            // ============================================================
+            // SHOP UPDATE (PUT)
+            // ============================================================
+            CreateMap<ShopUpdateDTO, Shop>()
+                .ForAllMembers(opt =>
+                    opt.Condition((src, dest, srcMember) => srcMember != null));
 
 
             // ============================================================
