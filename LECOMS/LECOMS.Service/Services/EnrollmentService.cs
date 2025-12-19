@@ -138,8 +138,13 @@ namespace LECOMS.Service.Services
 
             // 2) Load all Sections + Lessons in 1 query
             var sections = await _uow.Sections.Query()
-                .Where(s => s.CourseId == courseId)
-                .Include(s => s.Lessons)
+                .Where(s =>
+                    s.CourseId == courseId &&
+                    s.ApprovalStatus == ApprovalStatus.Approved   // ⭐
+                )
+                .Include(s => s.Lessons.Where(
+                    l => l.ApprovalStatus == ApprovalStatus.Approved // ⭐
+                ))
                 .OrderBy(s => s.OrderIndex)
                 .ToListAsync();
 
