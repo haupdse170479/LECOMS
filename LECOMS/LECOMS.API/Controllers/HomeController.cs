@@ -1,6 +1,7 @@
 ﻿using LECOMS.Common.Helper;
 using LECOMS.Data.DTOs.Course;
 using LECOMS.Data.Entities;
+using LECOMS.Data.Enum;
 using LECOMS.RepositoryContract.Interfaces;
 using LECOMS.Service.Services;
 using LECOMS.ServiceContract.Interfaces;
@@ -211,6 +212,8 @@ namespace LECOMS.API.Controllers
                     summary = course.Summary,
                     categoryName = course.Category?.Name,
                     courseThumbnail = course.CourseThumbnail,
+                    approvalStatus = course.ApprovalStatus.ToString(), // ⭐ NEW
+                    isPending = course.ApprovalStatus == ApprovalStatus.Pending, // ⭐ NEW
 
                     // 👇👇 Add isEnrolled vào đây (do khai báo phía trên)
                     isEnrolled = isEnrolled,

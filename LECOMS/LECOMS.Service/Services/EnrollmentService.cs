@@ -2,6 +2,7 @@
 using LECOMS.Data.DTOs.Course;
 using LECOMS.Data.DTOs.Gamification;
 using LECOMS.Data.Entities;
+using LECOMS.Data.Enum;
 using LECOMS.RepositoryContract.Interfaces;
 using LECOMS.ServiceContract.Interfaces;
 using Microsoft.EntityFrameworkCore;
@@ -31,6 +32,9 @@ namespace LECOMS.Service.Services
 
             var course = await _uow.Courses.GetAsync(c => c.Id == courseId);
             if (course == null) throw new KeyNotFoundException("Khóa học không được tìm thấy.");
+            // ⭐ 2️⃣ CHẶN ENROLL NẾU CHƯA APPROVED
+            if (course.ApprovalStatus != ApprovalStatus.Approved)
+                throw new InvalidOperationException("Khóa học đang chờ duyệt, chưa thể đăng ký.");
 
             var existing = await _uow.Enrollments.GetByUserAndCourseAsync(userId, courseId);
             if (existing != null) throw new InvalidOperationException("Người dùng đã đăng ký khóa học này.");
@@ -126,6 +130,11 @@ namespace LECOMS.Service.Services
                 throw new KeyNotFoundException("Người dùng không được ghi danh vào khóa học này.");
 
             var course = enrollment.Course;
+            // ⭐ CHẶN HỌC NẾU COURSE CHƯA APPROVED
+            if (course.ApprovalStatus != ApprovalStatus.Approved)
+            {
+                throw new InvalidOperationException("Khóa học đang chờ duyệt, chưa thể học.");
+            }
 
             // 2) Load all Sections + Lessons in 1 query
             var sections = await _uow.Sections.Query()
