@@ -541,46 +541,70 @@ namespace LECOMS.Service.Services
         }
         public async Task<object> OnboardingAsync(string userId, List<string> interests)
         {
-            // 1️⃣ Seed user bằng interest
+            if (interests == null || !interests.Any())
+            {
+                return new
+                {
+                    message = "No interest selected"
+                };
+            }
+
+            var interestMap = new Dictionary<string, string>
+            {
+                ["food"] = "food",
+                ["health"] = "fitness",
+                ["beauty"] = "beauty"
+            };
+
             foreach (var interest in interests)
             {
-                string? seedItemId = await GetSeedItemByInterestAsync(interest);
+                if (!interestMap.ContainsKey(interest))
+                    continue;
 
-                if (!string.IsNullOrEmpty(seedItemId))
+                var categorySlug = interestMap[interest];
+
+                // ===== COURSE =====
+                var course = await _uow.Courses.Query()
+                    .Include(c => c.Category)
+                    .Where(c =>
+                        c.Category.Slug == categorySlug &&
+                        c.Active == 1 &&
+                        c.ApprovalStatus == ApprovalStatus.Approved
+                    )
+                     .OrderByDescending(c => c.Id)
+                    .FirstOrDefaultAsync();
+
+                if (course != null)
                 {
                     await _client.SendAsync(
-                        new AddDetailView(userId, seedItemId, cascadeCreate: true)
+                        new AddDetailView(userId, course.Id, cascadeCreate: true)
+                    );
+                }
+
+                // ===== PRODUCT =====
+                var product = await _uow.Products.Query()
+                    .Include(p => p.Category)
+                    .Where(p =>
+                        p.Category.Slug == categorySlug &&
+                        p.Status == ProductStatus.Published &&
+                        p.ApprovalStatus == ApprovalStatus.Approved
+                    )
+                    .OrderByDescending(p => p.LastUpdatedAt)
+                    .FirstOrDefaultAsync();
+
+                if (product != null)
+                {
+                    await _client.SendAsync(
+                        new AddDetailView(userId, product.Id, cascadeCreate: true)
                     );
                 }
             }
 
-            // 2️⃣ Recommend sau khi seed
-            var rec = await _client.SendAsync(
-                new RecommendItemsToUser(userId, 20, cascadeCreate: true)
-            );
-
-            var recIds = rec.Recomms.Select(r => r.Id).ToList();
-
-            // 3️⃣ Load Product
-            var products = await _uow.Products.Query()
-                .Include(p => p.Images)
-                .Include(p => p.Category)
-                .Include(p => p.Shop)
-                .Include(p => p.Feedbacks)
-                .Where(p => recIds.Contains(p.Id))
-                .ToListAsync();
-
-            // 4️⃣ Load Course
-            var courses = await _uow.Courses.Query()
-                .Include(c => c.Category)
-                .Include(c => c.Shop)
-                .Where(c => recIds.Contains(c.Id))
-                .ToListAsync();
-
             return new
             {
-                recommendedProducts = products.Select(MapProduct).ToList(),
-                recommendedCourses = _mapper.Map<IEnumerable<CourseDTO>>(courses)
+                userId,
+                interests,
+                message = "Onboarding completed"
             };
         }
         private async Task<string?> GetSeedItemByInterestAsync(string interest)

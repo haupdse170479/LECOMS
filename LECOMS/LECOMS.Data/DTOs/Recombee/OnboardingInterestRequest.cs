@@ -6,9 +6,12 @@ using System.Threading.Tasks;
 
 namespace LECOMS.Data.DTOs.Recombee
 {
-    public class OnboardingInterestRequest
+    public class OnboardingInterestDto
     {
-        public List<string> Interests { get; set; } = new();
+        public string Key { get; set; } = string.Empty;
+        public string Label { get; set; } = string.Empty;
+        public string Icon { get; set; } = string.Empty;
+        public string Description { get; set; } = string.Empty;
     }
 
 }

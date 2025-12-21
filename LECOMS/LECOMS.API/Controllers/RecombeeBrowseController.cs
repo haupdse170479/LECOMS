@@ -248,18 +248,49 @@ namespace LECOMS.API.Controllers
 
             return StatusCode((int)res.StatusCode, res);
         }
-        [HttpPost("onboarding")]
-        public async Task<IActionResult> Onboarding(
-        [FromBody] OnboardingInterestRequest request)
+        [HttpGet("onboarding/interests")]
+        public IActionResult GetOnboardingInterests()
         {
-            var userId = User.Identity?.Name ?? "guest_user";
+            var response = new APIResponse();
 
-            var result = await _recombee.OnboardingAsync(
-                userId,
-                request.Interests
-            );
+            try
+            {
+                var interests = new List<object>
+        {
+            new
+            {
+                key = "food",
+                label = "Food",
+                icon = "🍳",
+                description = "Nấu ăn, đồ bếp, khóa học ẩm thực"
+            },
+            new
+            {
+                key = "health",
+                label = "Health",
+                icon = "💪",
+                description = "Sức khỏe, fitness, luyện tập"
+            },
+            new
+            {
+                key = "beauty",
+                label = "Beauty",
+                icon = "💄",
+                description = "Làm đẹp, skincare, makeup"
+            }
+        };
 
-            return Ok(result);
+                response.Result = interests;
+                response.StatusCode = HttpStatusCode.OK;
+            }
+            catch (Exception ex)
+            {
+                response.IsSuccess = false;
+                response.StatusCode = HttpStatusCode.InternalServerError;
+                response.ErrorMessages.Add(ex.Message);
+            }
+
+            return StatusCode((int)response.StatusCode, response);
         }
     }
 }
