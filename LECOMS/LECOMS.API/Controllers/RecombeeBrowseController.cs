@@ -1,4 +1,5 @@
 ﻿using LECOMS.Common.Helper;
+using LECOMS.Data.DTOs.Recombee;
 using LECOMS.Data.Entities;
 using LECOMS.Service.Services;
 using LECOMS.ServiceContract.Interfaces;
@@ -247,6 +248,18 @@ namespace LECOMS.API.Controllers
 
             return StatusCode((int)res.StatusCode, res);
         }
+        [HttpPost("onboarding")]
+        public async Task<IActionResult> Onboarding(
+        [FromBody] OnboardingInterestRequest request)
+        {
+            var userId = User.Identity?.Name ?? "guest_user";
 
+            var result = await _recombee.OnboardingAsync(
+                userId,
+                request.Interests
+            );
+
+            return Ok(result);
+        }
     }
 }

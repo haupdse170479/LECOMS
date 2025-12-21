@@ -539,6 +539,84 @@ namespace LECOMS.Service.Services
                 popularCategories = popularCategories
             };
         }
+        public async Task<object> OnboardingAsync(string userId, List<string> interests)
+        {
+            // 1️⃣ Seed user bằng interest
+            foreach (var interest in interests)
+            {
+                string? seedItemId = await GetSeedItemByInterestAsync(interest);
+
+                if (!string.IsNullOrEmpty(seedItemId))
+                {
+                    await _client.SendAsync(
+                        new AddDetailView(userId, seedItemId, cascadeCreate: true)
+                    );
+                }
+            }
+
+            // 2️⃣ Recommend sau khi seed
+            var rec = await _client.SendAsync(
+                new RecommendItemsToUser(userId, 20, cascadeCreate: true)
+            );
+
+            var recIds = rec.Recomms.Select(r => r.Id).ToList();
+
+            // 3️⃣ Load Product
+            var products = await _uow.Products.Query()
+                .Include(p => p.Images)
+                .Include(p => p.Category)
+                .Include(p => p.Shop)
+                .Include(p => p.Feedbacks)
+                .Where(p => recIds.Contains(p.Id))
+                .ToListAsync();
+
+            // 4️⃣ Load Course
+            var courses = await _uow.Courses.Query()
+                .Include(c => c.Category)
+                .Include(c => c.Shop)
+                .Where(c => recIds.Contains(c.Id))
+                .ToListAsync();
+
+            return new
+            {
+                recommendedProducts = products.Select(MapProduct).ToList(),
+                recommendedCourses = _mapper.Map<IEnumerable<CourseDTO>>(courses)
+            };
+        }
+        private async Task<string?> GetSeedItemByInterestAsync(string interest)
+        {
+            interest = interest.ToLower();
+
+            if (interest.Contains("cook"))
+            {
+                return await _uow.Products.Query()
+                    .Where(p => p.Category.Name.Contains("bếp") ||
+                                p.Category.Name.Contains("gia đình"))
+                    .OrderByDescending(p => p.Feedbacks.Count)
+                    .Select(p => p.Id)
+                    .FirstOrDefaultAsync();
+            }
+
+            if (interest.Contains("fitness"))
+            {
+                return await _uow.Courses.Query()
+                    .Where(c => c.Category.Name.Contains("Fitness"))
+                    .OrderByDescending(c => c.Id)
+                    .Select(c => c.Id)
+                    .FirstOrDefaultAsync();
+            }
+
+            if (interest.Contains("beauty") || interest.Contains("makeup"))
+            {
+                return await _uow.Products.Query()
+                    .Where(p => p.Category.Name.Contains("Beauty"))
+                    .OrderByDescending(p => p.Feedbacks.Count)
+                    .Select(p => p.Id)
+                    .FirstOrDefaultAsync();
+            }
+
+            return null;
+        }
 
     }
 }
