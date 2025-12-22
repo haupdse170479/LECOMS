@@ -77,6 +77,11 @@ namespace LECOMS.RepositoryContract.Interfaces
         IShopAddressRepository ShopAddresses { get; }
         Task<int> CompleteAsync();
         Task<IDbContextTransaction> BeginTransactionAsync();
+        IRepository<Quiz> Quizzes { get; }
+        IRepository<QuizQuestion> QuizQuestions { get; }
+        IRepository<QuizAnswer> QuizAnswers { get; }
+
+
         bool HasActiveTransaction { get; }
        
     }

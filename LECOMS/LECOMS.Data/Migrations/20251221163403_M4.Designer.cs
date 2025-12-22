@@ -4,6 +4,7 @@ using LECOMS.Data.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace LECOMS.Data.Migrations
 {
     [DbContext(typeof(LecomDbContext))]
-    partial class LecomDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251221163403_M4")]
+    partial class M4
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -1586,68 +1589,6 @@ namespace LECOMS.Data.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("QuestDefinitions");
-                });
-
-            modelBuilder.Entity("LECOMS.Data.Entities.Quiz", b =>
-                {
-                    b.Property<string>("Id")
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<string>("LessonId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("LessonId")
-                        .IsUnique();
-
-                    b.ToTable("Quizzes");
-                });
-
-            modelBuilder.Entity("LECOMS.Data.Entities.QuizAnswer", b =>
-                {
-                    b.Property<string>("Id")
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<string>("Content")
-                        .IsRequired()
-                        .HasMaxLength(300)
-                        .HasColumnType("nvarchar(300)");
-
-                    b.Property<bool>("IsCorrect")
-                        .HasColumnType("bit");
-
-                    b.Property<string>("QuizQuestionId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("QuizQuestionId");
-
-                    b.ToTable("QuizAnswers");
-                });
-
-            modelBuilder.Entity("LECOMS.Data.Entities.QuizQuestion", b =>
-                {
-                    b.Property<string>("Id")
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<string>("Content")
-                        .IsRequired()
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
-
-                    b.Property<string>("QuizId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("QuizId");
-
-                    b.ToTable("QuizQuestions");
                 });
 
             modelBuilder.Entity("LECOMS.Data.Entities.RankTier", b =>
@@ -3413,39 +3354,6 @@ namespace LECOMS.Data.Migrations
                     b.Navigation("Product");
                 });
 
-            modelBuilder.Entity("LECOMS.Data.Entities.Quiz", b =>
-                {
-                    b.HasOne("LECOMS.Data.Entities.Lesson", "Lesson")
-                        .WithOne("Quiz")
-                        .HasForeignKey("LECOMS.Data.Entities.Quiz", "LessonId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Lesson");
-                });
-
-            modelBuilder.Entity("LECOMS.Data.Entities.QuizAnswer", b =>
-                {
-                    b.HasOne("LECOMS.Data.Entities.QuizQuestion", "Question")
-                        .WithMany("Answers")
-                        .HasForeignKey("QuizQuestionId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Question");
-                });
-
-            modelBuilder.Entity("LECOMS.Data.Entities.QuizQuestion", b =>
-                {
-                    b.HasOne("LECOMS.Data.Entities.Quiz", "Quiz")
-                        .WithMany("Questions")
-                        .HasForeignKey("QuizId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Quiz");
-                });
-
             modelBuilder.Entity("LECOMS.Data.Entities.RefundRequest", b =>
                 {
                     b.HasOne("LECOMS.Data.Entities.User", "AdminResponseByUser")
@@ -3895,9 +3803,6 @@ namespace LECOMS.Data.Migrations
             modelBuilder.Entity("LECOMS.Data.Entities.Lesson", b =>
                 {
                     b.Navigation("LessonProducts");
-
-                    b.Navigation("Quiz")
-                        .IsRequired();
                 });
 
             modelBuilder.Entity("LECOMS.Data.Entities.Order", b =>
@@ -3935,16 +3840,6 @@ namespace LECOMS.Data.Migrations
             modelBuilder.Entity("LECOMS.Data.Entities.ProductCategory", b =>
                 {
                     b.Navigation("Products");
-                });
-
-            modelBuilder.Entity("LECOMS.Data.Entities.Quiz", b =>
-                {
-                    b.Navigation("Questions");
-                });
-
-            modelBuilder.Entity("LECOMS.Data.Entities.QuizQuestion", b =>
-                {
-                    b.Navigation("Answers");
                 });
 
             modelBuilder.Entity("LECOMS.Data.Entities.Shipment", b =>

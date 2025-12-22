@@ -25,6 +25,7 @@ namespace LECOMS.Data.Entities
         public ApprovalStatus ApprovalStatus { get; set; } = ApprovalStatus.Pending;
         public string? ModeratorNote { get; set; }
 
+        public Quiz Quiz { get; set; }
 
     }
 }
