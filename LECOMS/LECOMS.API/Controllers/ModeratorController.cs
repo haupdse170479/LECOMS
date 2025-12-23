@@ -445,5 +445,69 @@ namespace LECOMS.API.Controllers
 
             return StatusCode((int)response.StatusCode, response);
         }
+        [HttpGet("lessons/{id}")]
+        public async Task<IActionResult> GetLessonDetail(string id)
+        {
+            var response = new APIResponse();
+            try
+            {
+                var lesson = await _uow.Lessons.Query()
+                    .Include(l => l.Section)
+                        .ThenInclude(s => s.Course)
+                    .Include(l => l.LessonProducts)
+                        .ThenInclude(lp => lp.Product)
+                    .FirstOrDefaultAsync(l => l.Id == id);
+
+                if (lesson == null)
+                {
+                    response.IsSuccess = false;
+                    response.StatusCode = HttpStatusCode.NotFound;
+                    response.ErrorMessages.Add("Lesson not found");
+                    return StatusCode((int)response.StatusCode, response);
+                }
+
+                response.StatusCode = HttpStatusCode.OK;
+                response.Result = new
+                {
+                    lesson.Id,
+                    lesson.Title,
+                    lesson.Type,
+                    lesson.DurationSeconds,
+                    lesson.ContentUrl,
+                    lesson.OrderIndex,
+                    lesson.ApprovalStatus,
+                    lesson.ModeratorNote,
+
+                    Section = new
+                    {
+                        lesson.Section.Id,
+                        lesson.Section.Title
+                    },
+
+                    Course = new
+                    {
+                        lesson.Section.Course.Id,
+                        lesson.Section.Course.Title,
+                        lesson.Section.Course.Slug
+                    },
+
+                    Products = lesson.LessonProducts.Select(lp => new
+                    {
+                        lp.Product.Id,
+                        lp.Product.Name,
+                        lp.Product.Price
+                    })
+                };
+            }
+            catch (Exception ex)
+            {
+                response.IsSuccess = false;
+                response.StatusCode = HttpStatusCode.InternalServerError;
+                response.ErrorMessages.Add(ex.Message);
+            }
+
+            return StatusCode((int)response.StatusCode, response);
+        }
+
     }
 }
