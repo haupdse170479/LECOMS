@@ -124,30 +124,6 @@ namespace LECOMS.Service.Services
             };
 
             await _unitOfWork.Lessons.AddAsync(lesson);
-            // ==========================
-            // CREATE QUIZ (NẾU CÓ)
-            // ==========================
-            if (dto.Type == LessonType.Quiz && dto.Quiz != null)
-            {
-                var quiz = new Quiz
-                {
-                    Id = Guid.NewGuid().ToString(),
-                    LessonId = lesson.Id,
-                    Questions = dto.Quiz.Questions.Select(q => new QuizQuestion
-                    {
-                        Id = Guid.NewGuid().ToString(),
-                        Content = q.Content,
-                        Answers = q.Answers.Select(a => new QuizAnswer
-                        {
-                            Id = Guid.NewGuid().ToString(),
-                            Content = a.Content,
-                            IsCorrect = a.IsCorrect
-                        }).ToList()
-                    }).ToList()
-                };
-
-                await _unitOfWork.Quizzes.AddAsync(quiz);
-            }
             await _unitOfWork.CompleteAsync();
             
             // Load lại để include Section (nếu cần)
@@ -566,7 +542,7 @@ namespace LECOMS.Service.Services
         {
             var lessons = await _unitOfWork.Lessons.GetAllAsync(
                 l => l.CourseSectionId == sectionId,
-                includeProperties: "LessonProducts.Product.Shop,LessonProducts.Product.Images,Quiz.Questions.Answers"
+                includeProperties: "LessonProducts.Product.Shop,LessonProducts.Product.Images"
             );
 
             if (!isSellerOwner)
@@ -589,23 +565,7 @@ namespace LECOMS.Service.Services
                     OrderIndex = l.OrderIndex,
                     ApprovalStatus = l.ApprovalStatus,
                     ModeratorNote = l.ModeratorNote,
-                    // ⭐⭐⭐ THÊM CHỖ NÀY
-                    Quiz = l.Type == LessonType.Quiz && l.Quiz != null
-                ? new QuizDto
-                {
-                    Id = l.Quiz.Id,
-                    Questions = l.Quiz.Questions.Select(q => new QuizQuestionDto
-                    {
-                        Id = q.Id,
-                        Content = q.Content,
-                        Answers = q.Answers.Select(a => new QuizAnswerDto
-                        {
-                            Id = a.Id,
-                            Content = a.Content
-                        }).ToList()
-                    }).ToList()
-                }
-                : null,
+
                     LinkedProducts = l.LessonProducts.Select(lp => new LessonLinkedProductDTO
                     {
                         Id = lp.Product.Id,

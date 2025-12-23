@@ -5,7 +5,7 @@
 namespace LECOMS.Data.Migrations
 {
     /// <inheritdoc />
-    public partial class M4 : Migration
+    public partial class Migrationnew : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)

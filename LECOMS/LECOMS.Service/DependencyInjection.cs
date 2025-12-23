@@ -66,8 +66,6 @@
             services.AddScoped<IAdminDashboardService, AdminDashboardService>();
             services.AddHttpClient<IShippingService, GHNShippingService>();
             services.AddScoped<IShopAddressService, ShopAddressService>();
-            services.AddScoped<IQuizService, QuizService>();
-
             return services;
             }
         }

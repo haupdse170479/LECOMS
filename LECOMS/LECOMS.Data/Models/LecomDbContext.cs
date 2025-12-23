@@ -88,9 +88,6 @@ namespace LECOMS.Data.Models
         public DbSet<AchievementDefinition> AchievementDefinitions { get; set; }
         public DbSet<UserAchievementProgress> UserAchievementProgresses { get; set; }
         public DbSet<ShopAddress> ShopAddresses { get; set; }
-        public DbSet<Quiz> Quizzes { get; set; }
-        public DbSet<QuizQuestion> QuizQuestions { get; set; }
-        public DbSet<QuizAnswer> QuizAnswers { get; set; }
 
         // =====================================================================
         // ==== MODEL CONFIGURATION ====
@@ -584,23 +581,6 @@ namespace LECOMS.Data.Models
             .HasForeignKey(f => f.ProductId)
             .OnDelete(DeleteBehavior.Cascade);
 
-            b.Entity<Quiz>()
-        .HasOne(q => q.Lesson)
-        .WithOne(l => l.Quiz)
-        .HasForeignKey<Quiz>(q => q.LessonId)
-        .OnDelete(DeleteBehavior.Cascade);
-
-            b.Entity<QuizQuestion>()
-                .HasOne(q => q.Quiz)
-                .WithMany(qz => qz.Questions)
-                .HasForeignKey(q => q.QuizId)
-                .OnDelete(DeleteBehavior.Cascade);
-
-            b.Entity<QuizAnswer>()
-                .HasOne(a => a.Question)
-                .WithMany(q => q.Answers)
-                .HasForeignKey(a => a.QuizQuestionId)
-                .OnDelete(DeleteBehavior.Cascade);
         }
     }
 }

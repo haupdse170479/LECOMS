@@ -21,13 +21,6 @@ namespace LECOMS.Common.Helper
     {
         public MappingProfile()
         {
-            //quiz
-            CreateMap<Quiz, QuizDto>();
-
-            CreateMap<QuizQuestion, QuizQuestionDto>();
-
-            // ⭐ KHÔNG MAP IsCorrect
-            CreateMap<QuizAnswer, QuizAnswerDto>();
             // ============================================================
             // USER
             // ============================================================

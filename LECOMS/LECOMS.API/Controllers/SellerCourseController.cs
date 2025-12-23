@@ -89,27 +89,8 @@ namespace LECOMS.API.Controllers
             try
             {
                 var lesson = await _service.CreateLessonAsync(dto);
-
-                // ⭐ MAP SANG DTO — KHÔNG TRẢ ENTITY
-                var lessonDto = new LessonDto
-                {
-                    Id = lesson.Id,
-                    CourseSectionId = lesson.CourseSectionId,
-                    Title = lesson.Title,
-                    Type = lesson.Type,
-                    DurationSeconds = lesson.DurationSeconds,
-                    ContentUrl = lesson.ContentUrl,
-                    OrderIndex = lesson.OrderIndex,
-                    ApprovalStatus = lesson.ApprovalStatus,
-                    ModeratorNote = lesson.ModeratorNote,
-
-                    // ❌ KHÔNG return Quiz entity để tránh cycle
-                    Quiz = null,
-                    LinkedProducts = new List<LessonLinkedProductDTO>()
-                };
-
                 response.StatusCode = HttpStatusCode.Created;
-                response.Result = lessonDto;
+                response.Result = lesson;
             }
             catch (Exception ex)
             {
@@ -117,10 +98,8 @@ namespace LECOMS.API.Controllers
                 response.StatusCode = HttpStatusCode.BadRequest;
                 response.ErrorMessages.Add(ex.Message);
             }
-
             return StatusCode((int)response.StatusCode, response);
         }
-
 
         // ================================================================
         // ✅ PHẦN MỚI: Liên kết sản phẩm với bài học (Lesson–Product)

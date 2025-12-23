@@ -77,9 +77,6 @@ namespace LECOMS.Repository.Repositories
 
         public INotificationRepository Notifications { get; }
 
-        public IRepository<Quiz> Quizzes { get; }
-        public IRepository<QuizQuestion> QuizQuestions { get; }
-        public IRepository<QuizAnswer> QuizAnswers { get; }
 
         public UnitOfWork(LecomDbContext context, IUserRepository userRepository, IShopRepository shopRepository, ICourseRepository courseRepo, ICourseSectionRepository sectionRepo,
         ILessonRepository lessonRepo, ICourseProductRepository cpRepo, ICourseCategoryRepository courseCategories, IProductCategoryRepository productCategories, IProductRepository products, IEnrollmentRepository enrollmentRepository, IProductImageRepository productImageRepository, ILessonProductRepository lessonProductRepository, ILandingPageRepository landingPage, ICartRepository cartRepository, ICartItemRepository cartItemRepository, IOrderRepository orderRepository, IOrderDetailRepository orderDetailRepository, IPaymentRepository paymentRepository, ITransactionRepository transactionRepository, IShopWalletRepository shopWalletRepository, ICustomerWalletRepository customerWalletRepository, IWalletTransactionRepository walletTransactionRepository, ICustomerWalletTransactionRepository customerWalletTransactionRepository, IRefundRequestRepository refundRequestRepository, IWithdrawalRequestRepository withdrawalRequestRepository, ICustomerWithdrawalRequestRepository customerWithdrawalRequestRepository, IPlatformConfigRepository platformConfigRepository
@@ -167,9 +164,6 @@ namespace LECOMS.Repository.Repositories
 
             Notifications = notificationRepository;
             ShopAddresses = shopAddressRepository;
-            Quizzes = new Repository<Quiz>(context);
-            QuizQuestions = new Repository<QuizQuestion>(context);
-            QuizAnswers = new Repository<QuizAnswer>(context);
 
         }
         public async Task<int> CompleteAsync()
