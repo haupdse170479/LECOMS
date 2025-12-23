@@ -19,13 +19,15 @@ namespace LECOMS.Service.Services
         private readonly IUserRepository _userRepository;
         private readonly UserManager<User> _userManager;
         private readonly RoleManager<IdentityRole> _roleManager;
+        private readonly IAchievementService _achievement;
 
-        public UserService(IUnitOfWork unitOfWork, IUserRepository userRepository, UserManager<User> userManager, RoleManager<IdentityRole> roleManager)
+        public UserService(IUnitOfWork unitOfWork, IUserRepository userRepository, UserManager<User> userManager, RoleManager<IdentityRole> roleManager, IAchievementService achievement)
         {
             _unitOfWork = unitOfWork;
             _userRepository = userRepository;
             _userManager = userManager;
             _roleManager = roleManager;
+            _achievement = achievement;
         }
 
         public Task<IEnumerable<User>> GetAllUsers()
@@ -123,6 +125,22 @@ namespace LECOMS.Service.Services
                 if (result)
                 {
                     await _userRepository.SaveChangesAsync(); // Lưu vào database
+                                                              // ⭐ CHECK HỒ SƠ ĐÃ ĐỦ CHƯA
+                    bool isProfileCompleted =
+                        !string.IsNullOrWhiteSpace(user.FullName) &&
+                        !string.IsNullOrWhiteSpace(user.PhoneNumber) &&
+                        !string.IsNullOrWhiteSpace(user.Address) &&
+                        user.DateOfBirth.HasValue;
+
+                    if (isProfileCompleted)
+                    {
+                        // ⭐ ACHIEVEMENT – Hoàn tất hồ sơ (chỉ cộng 1 lần)
+                        await _achievement.IncreaseProgressAsync(
+                            user.Id,
+                            "ACH_COMPLETE_PROFILE",
+                            1
+                        );
+                    }
                 }
 
                 return result;

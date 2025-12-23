@@ -341,9 +341,9 @@ namespace LECOMS.Service.Services
             // ================================
             // ⭐ ACHIEVEMENTS — LESSON EVENTS
             // ================================
-            await _achievement.IncreaseProgressAsync(userId, "ACHV_FIRST_LESSON", 1);
-            await _achievement.IncreaseProgressAsync(userId, "ACHV_3_LESSONS", 1);
-            await _achievement.IncreaseProgressAsync(userId, "ACHV_10_LESSONS", 1);
+            await _achievement.IncreaseProgressAsync(userId, "ACH_FIRST_LESSON", 1);
+            await _achievement.IncreaseProgressAsync(userId, "ACH_3_LESSONS", 1);
+            await _achievement.IncreaseProgressAsync(userId, "ACH_10_LESSONS", 1);
 
             return true;
         }

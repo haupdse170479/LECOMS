@@ -27,6 +27,7 @@ namespace LECOMS.Service.Services
         private readonly IEmailService _emailService;
         private readonly IUnitOfWork _unitOfWork;
         private readonly IGamificationService _gamification;
+        private readonly IAchievementService _achievement;
         public AuthService(
             UserManager<User> userManager,
             RoleManager<IdentityRole> roleManager,
@@ -34,7 +35,8 @@ namespace LECOMS.Service.Services
             IMapper mapper,
             IEmailService emailService,
             IUnitOfWork unitOfWork,
-            IGamificationService gamificationService)
+            IGamificationService gamificationService,
+            IAchievementService achievement)
         {
             _userManager = userManager;
             _roleManager = roleManager;
@@ -43,6 +45,7 @@ namespace LECOMS.Service.Services
             _emailService = emailService;
             _unitOfWork = unitOfWork;
             _gamification = gamificationService;
+            _achievement = achievement;
         }
 
         public async Task<LoginResponseDTO> LoginAsync(LoginRequestDTO loginRequestDTO)
@@ -67,6 +70,8 @@ namespace LECOMS.Service.Services
 
             user.RefreshToken = refreshToken;
             await _userManager.UpdateAsync(user);
+            // ⭐ ACHIEVEMENT – Đăng nhập lần đầu
+            await _achievement.IncreaseProgressAsync(user.Id, "ACH_FIRST_LOGIN", 1);
 
             return new LoginResponseDTO
             {
@@ -159,6 +164,11 @@ namespace LECOMS.Service.Services
 
             await _unitOfWork.CustomerWallets.AddAsync(wallet);
             await _unitOfWork.CompleteAsync();
+            // init gamification
+            await _gamification.InitializeUserGamificationAsync(user.Id);
+
+            // ⭐ ACHIEVEMENT: tạo tài khoản
+            await _achievement.IncreaseProgressAsync(user.Id, "ACH_CREATE_ACCOUNT", 1);
 
             await _gamification.InitializeUserGamificationAsync(user.Id);
 
