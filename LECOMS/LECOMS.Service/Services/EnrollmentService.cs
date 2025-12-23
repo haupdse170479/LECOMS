@@ -299,7 +299,11 @@ namespace LECOMS.Service.Services
             {
                 // Get all lessons of this course
                 var lessonIdsOfCourse = await _uow.Lessons.Query()
-                    .Where(l => l.Section.CourseId == courseId)
+                    .Where(l =>
+                        l.Section.CourseId == courseId &&
+                        l.ApprovalStatus == ApprovalStatus.Approved &&
+                        l.Section.ApprovalStatus == ApprovalStatus.Approved
+                    )
                     .Select(l => l.Id)
                     .ToListAsync();
 
