@@ -29,6 +29,7 @@ namespace LECOMS.Service.Services
 
         public async Task<GamificationProfileDTO> GetProfileAsync(string userId)
         {
+            await InitializeUserGamificationAsync(userId); // ⭐ ADD DÒNG NÀY
             // Lấy hoặc tạo wallet
             var wallet = await _uow.PointWallets.GetByUserIdAsync(userId);
             if (wallet == null)
@@ -63,9 +64,18 @@ namespace LECOMS.Service.Services
                 XpToNextLevel = CalcXpToNextLevel(wallet.Level),
                 Coins = wallet.Balance,
                 DailyStreak = 0,
-                DailyQuests = questDtos.Where(q => q.Period == QuestPeriod.Daily.ToString()).ToList(),
-                WeeklyQuests = questDtos.Where(q => q.Period == QuestPeriod.Weekly.ToString()).ToList(),
-                MonthlyQuests = questDtos.Where(q => q.Period == QuestPeriod.Monthly.ToString()).ToList()
+                DailyQuests = questDtos
+            .Where(q => q.Period == QuestPeriod.Daily)
+            .ToList(),
+
+                        WeeklyQuests = questDtos
+            .Where(q => q.Period == QuestPeriod.Weekly)
+            .ToList(),
+
+                        MonthlyQuests = questDtos
+            .Where(q => q.Period == QuestPeriod.Monthly)
+            .ToList(),
+
             };
 
             return profile;

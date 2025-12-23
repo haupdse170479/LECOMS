@@ -319,7 +319,7 @@ namespace LECOMS.Common.Helper
     .ForMember(d => d.RewardXP, o => o.MapFrom(s => s.Quest.RewardXP))
     .ForMember(d => d.RewardPoints, o => o.MapFrom(s => s.Quest.RewardPoints))
     .ForMember(d => d.TargetValue, o => o.MapFrom(s => s.Quest.TargetValue))
-    .ForMember(d => d.Period, o => o.MapFrom(s => s.Quest.Period.ToString()))
+    .ForMember(d => d.Period, o => o.MapFrom(s => s.Quest.Period)) // ⭐ FIX
     .ForMember(d => d.IsRewardClaimed, o => o.MapFrom(s => s.IsClaimed))
     .ForMember(d => d.Status, o => o.MapFrom(s =>
         s.IsClaimed ? "Claimed" :

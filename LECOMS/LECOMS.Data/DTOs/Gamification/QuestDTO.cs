@@ -1,4 +1,6 @@
-﻿namespace LECOMS.Data.DTOs.Gamification
+﻿using LECOMS.Data.Enum;
+
+namespace LECOMS.Data.DTOs.Gamification
 {
     public class QuestDTO
     {
@@ -6,7 +8,8 @@
         public string Title { get; set; } = null!;
         public string Description { get; set; } = null!;
 
-        public string Period { get; set; } = null!;  // Daily/Weekly/Monthly
+        public QuestPeriod Period { get; set; }
+        // Daily/Weekly/Monthly
 
         public int CurrentValue { get; set; }
         public int TargetValue { get; set; }
