@@ -227,6 +227,7 @@ namespace LECOMS.API.Controllers
                     },
 
                     sections = course.Sections
+                        .Where(s => s.ApprovalStatus == ApprovalStatus.Approved)
                         .OrderBy(s => s.OrderIndex)
                         .Select(s => new
                         {
@@ -234,12 +235,15 @@ namespace LECOMS.API.Controllers
                             title = s.Title,
                             orderIndex = s.OrderIndex,
                             lessons = s.Lessons
+                                    .Where(l => l.ApprovalStatus == ApprovalStatus.Approved)
                                 .OrderBy(l => l.OrderIndex)
                                 .Select(l =>
                                 {
                                     // 🔹 Lấy danh sách sản phẩm liên kết với lesson
                                     var linkedProducts = l.LessonProducts?
-                                        .Where(lp => lp.Product != null)
+                                        .Where(lp => lp.Product != null &&
+                                                lp.Product.Active == 1 &&
+                                                lp.Product.Status == ProductStatus.Published)
                                         .Select(lp => new LessonLinkedProductDTO
                                         {
                                             Id = lp.Product.Id,
