@@ -164,7 +164,12 @@ namespace LECOMS.Service.Services
                 .Include(p => p.Category)
                 .Include(p => p.Shop)
                 .Include(p => p.Feedbacks)
-                .Where(p => recIds.Contains(p.Id))
+                .Where(p =>
+                    recIds.Contains(p.Id) &&
+                    p.Active == 1 &&
+                    p.Status == ProductStatus.Published &&
+                    p.ApprovalStatus == ApprovalStatus.Approved
+                )
                 .ToListAsync();
 
             var recommendedCategories = recommendedProducts
@@ -243,7 +248,12 @@ namespace LECOMS.Service.Services
             var courses = await _uow.Courses.Query()
                 .Include(c => c.Category)
                 .Include(c => c.Shop)
-                .Where(c => ids.Contains(c.Id))
+                .Where(c =>
+                ids.Contains(c.Id) &&
+                c.Active == 1 &&
+                c.ApprovalStatus == ApprovalStatus.Approved
+            )
+
                 .ToListAsync();
 
             return _mapper.Map<IEnumerable<CourseDTO>>(courses);
@@ -265,7 +275,13 @@ namespace LECOMS.Service.Services
                 .Include(p => p.Category)
                 .Include(p => p.Shop)
                 .Include(p => p.Feedbacks)
-                .Where(p => ids.Contains(p.Id))
+                .Where(p =>
+                    ids.Contains(p.Id) &&
+                    p.Active == 1 &&
+                    p.Status == ProductStatus.Published &&
+                    p.ApprovalStatus == ApprovalStatus.Approved
+                )
+
                 .ToListAsync();
 
             return products.Select(MapProduct).ToList();
@@ -443,7 +459,12 @@ namespace LECOMS.Service.Services
                 recommendedCourses = await _uow.Courses.Query()
                     .Include(c => c.Category)
                     .Include(c => c.Shop)
-                    .Where(c => recIds.Contains(c.Id))
+                    .Where(c =>
+                            recIds.Contains(c.Id) &&
+                            c.Active == 1 &&
+                            c.ApprovalStatus == ApprovalStatus.Approved
+                        )
+
                     .ToListAsync();
             }
 
@@ -586,6 +607,7 @@ namespace LECOMS.Service.Services
                     .Include(p => p.Category)
                     .Where(p =>
                         p.Category.Slug == categorySlug &&
+                        p.Active == 1 &&
                         p.Status == ProductStatus.Published &&
                         p.ApprovalStatus == ApprovalStatus.Approved
                     )
