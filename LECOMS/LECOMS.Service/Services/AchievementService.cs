@@ -148,6 +148,42 @@ namespace LECOMS.Service.Services
             {
                 progress.IsCompleted = true;
                 progress.CompletedAt = DateTime.UtcNow;
+
+                // ⭐ AUTO REWARD
+                var wallet = await _uow.PointWallets.GetByUserIdAsync(userId);
+                if (wallet == null)
+                {
+                    wallet = new PointWallet
+                    {
+                        UserId = userId,
+                        Balance = 0,
+                        CurrentXP = 0,
+                        Level = 1
+                    };
+                    await _uow.PointWallets.AddAsync(wallet);
+                }
+
+                wallet.CurrentXP += def.RewardXP;
+                wallet.Balance += def.RewardPoints;
+                wallet.LifetimeEarned += def.RewardPoints;
+
+                // Level up
+                var required = 100 * wallet.Level * wallet.Level;
+                while (wallet.CurrentXP >= required)
+                {
+                    wallet.CurrentXP -= required;
+                    wallet.Level++;
+                    required = 100 * wallet.Level * wallet.Level;
+                }
+
+                await _uow.PointLedgers.AddAsync(new PointLedger
+                {
+                    PointWalletId = wallet.Id,
+                    Amount = def.RewardPoints,
+                    Type = Data.Enum.PointLedgerType.Earn,
+                    Description = $"Achievement unlocked: {def.Title}",
+                    CreatedAt = DateTime.UtcNow
+                });
             }
 
             progress.UpdatedAt = DateTime.UtcNow;
