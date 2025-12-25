@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace LECOMS.Data.Migrations
 {
     [DbContext(typeof(LecomDbContext))]
-    [Migration("20251118130337_AddUserLessonProgressTable")]
-    partial class AddUserLessonProgressTable
+    [Migration("20251224125939_Migrations")]
+    partial class Migrations
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -24,6 +24,54 @@ namespace LECOMS.Data.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
+
+            modelBuilder.Entity("LECOMS.Data.Entities.AchievementDefinition", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<bool>("Active")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Category")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("ImageUrl")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<int>("RewardPoints")
+                        .HasColumnType("int");
+
+                    b.Property<int>("RewardXP")
+                        .HasColumnType("int");
+
+                    b.Property<int>("TargetValue")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("AchievementDefinitions");
+                });
 
             modelBuilder.Entity("LECOMS.Data.Entities.Address", b =>
                 {
@@ -247,12 +295,18 @@ namespace LECOMS.Data.Migrations
                     b.Property<string>("Id")
                         .HasColumnType("nvarchar(450)");
 
+                    b.Property<int>("ApprovalStatus")
+                        .HasColumnType("int");
+
                     b.Property<string>("Body")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
+
+                    b.Property<string>("ModeratorNote")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Title")
                         .IsRequired()
@@ -315,6 +369,9 @@ namespace LECOMS.Data.Migrations
                     b.Property<byte>("Active")
                         .HasColumnType("tinyint");
 
+                    b.Property<int>("ApprovalStatus")
+                        .HasColumnType("int");
+
                     b.Property<string>("CategoryId")
                         .IsRequired()
                         .HasColumnType("nvarchar(450)");
@@ -322,6 +379,9 @@ namespace LECOMS.Data.Migrations
                     b.Property<string>("CourseThumbnail")
                         .HasMaxLength(1000)
                         .HasColumnType("nvarchar(1000)");
+
+                    b.Property<string>("ModeratorNote")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("ShopId")
                         .HasColumnType("int");
@@ -409,9 +469,15 @@ namespace LECOMS.Data.Migrations
                     b.Property<string>("Id")
                         .HasColumnType("nvarchar(450)");
 
+                    b.Property<int>("ApprovalStatus")
+                        .HasColumnType("int");
+
                     b.Property<string>("CourseId")
                         .IsRequired()
                         .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("ModeratorNote")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("OrderIndex")
                         .HasColumnType("int");
@@ -575,16 +641,9 @@ namespace LECOMS.Data.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
-                    b.Property<string>("FailureReason")
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
-
                     b.Property<string>("Note")
                         .HasMaxLength(500)
                         .HasColumnType("nvarchar(500)");
-
-                    b.Property<DateTime?>("ProcessedAt")
-                        .HasColumnType("datetime2");
 
                     b.Property<string>("RejectionReason")
                         .HasMaxLength(500)
@@ -595,10 +654,6 @@ namespace LECOMS.Data.Migrations
 
                     b.Property<int>("Status")
                         .HasColumnType("int");
-
-                    b.Property<string>("TransactionReference")
-                        .HasMaxLength(255)
-                        .HasColumnType("nvarchar(255)");
 
                     b.HasKey("Id");
 
@@ -671,6 +726,98 @@ namespace LECOMS.Data.Migrations
                     b.ToTable("Enrollments");
                 });
 
+            modelBuilder.Entity("LECOMS.Data.Entities.Feedback", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("Content")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("OrderId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("ProductId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<int>("Rating")
+                        .HasColumnType("int");
+
+                    b.Property<int>("ShopId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("OrderId");
+
+                    b.HasIndex("ProductId");
+
+                    b.HasIndex("ShopId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("Feedbacks");
+                });
+
+            modelBuilder.Entity("LECOMS.Data.Entities.FeedbackImage", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("FeedbackId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("Url")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("FeedbackId");
+
+                    b.ToTable("FeedbackImages");
+                });
+
+            modelBuilder.Entity("LECOMS.Data.Entities.FeedbackReply", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("FeedbackId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("ReplyContent")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("ShopId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("FeedbackId")
+                        .IsUnique();
+
+                    b.HasIndex("ShopId");
+
+                    b.ToTable("FeedbackReplies");
+                });
+
             modelBuilder.Entity("LECOMS.Data.Entities.Leaderboard", b =>
                 {
                     b.Property<string>("Id")
@@ -734,6 +881,9 @@ namespace LECOMS.Data.Migrations
                     b.Property<string>("Id")
                         .HasColumnType("nvarchar(450)");
 
+                    b.Property<int>("ApprovalStatus")
+                        .HasColumnType("int");
+
                     b.Property<string>("ContentUrl")
                         .HasMaxLength(1000)
                         .HasColumnType("nvarchar(1000)");
@@ -744,6 +894,9 @@ namespace LECOMS.Data.Migrations
 
                     b.Property<int?>("DurationSeconds")
                         .HasColumnType("int");
+
+                    b.Property<string>("ModeratorNote")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("OrderIndex")
                         .HasColumnType("int");
@@ -870,12 +1023,22 @@ namespace LECOMS.Data.Migrations
                         .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
+                    b.Property<DateTime?>("EstimatedDeliveryDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("EstimatedDeliveryText")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
                     b.Property<string>("OrderCode")
                         .IsRequired()
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
                     b.Property<int>("PaymentStatus")
+                        .HasColumnType("int");
+
+                    b.Property<int>("ServiceTypeId")
                         .HasColumnType("int");
 
                     b.Property<string>("ShipToAddress")
@@ -897,6 +1060,14 @@ namespace LECOMS.Data.Migrations
                         .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
+                    b.Property<string>("ShippingStatus")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("ShippingTrackingCode")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
                     b.Property<int>("ShopId")
                         .HasColumnType("int");
 
@@ -907,6 +1078,29 @@ namespace LECOMS.Data.Migrations
                         .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
+                    b.Property<int>("ToDistrictId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("ToDistrictName")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<int?>("ToProvinceId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("ToProvinceName")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("ToWardCode")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("ToWardName")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
                     b.Property<decimal>("Total")
                         .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
@@ -914,6 +1108,10 @@ namespace LECOMS.Data.Migrations
                     b.Property<string>("UserId")
                         .IsRequired()
                         .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("VoucherCodeUsed")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
 
                     b.HasKey("Id");
 
@@ -1082,6 +1280,9 @@ namespace LECOMS.Data.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
+                    b.Property<int>("SellerRefundResponseHours")
+                        .HasColumnType("int");
+
                     b.HasKey("Id");
 
                     b.ToTable("PlatformConfigs", (string)null);
@@ -1101,36 +1302,91 @@ namespace LECOMS.Data.Migrations
                             MaxWithdrawalAmount = 50000000m,
                             MinWithdrawalAmount = 100000m,
                             OrderHoldingDays = 7,
-                            PayOSEnvironment = "sandbox"
+                            PayOSEnvironment = "sandbox",
+                            SellerRefundResponseHours = 0
                         });
                 });
 
-            modelBuilder.Entity("LECOMS.Data.Entities.PointLedger", b =>
+            modelBuilder.Entity("LECOMS.Data.Entities.PlatformWallet", b =>
                 {
                     b.Property<string>("Id")
                         .HasColumnType("nvarchar(450)");
 
-                    b.Property<int>("BalanceAfter")
-                        .HasColumnType("int");
+                    b.Property<decimal>("Balance")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<string>("PointWalletId")
+                    b.Property<DateTime>("LastUpdated")
+                        .HasColumnType("datetime2");
+
+                    b.Property<decimal>("TotalCommissionEarned")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("TotalCommissionRefunded")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("TotalPayout")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("PlatformWallets", (string)null);
+                });
+
+            modelBuilder.Entity("LECOMS.Data.Entities.PlatformWalletTransaction", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<decimal>("Amount")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("BalanceAfter")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("BalanceBefore")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("PlatformWalletId")
                         .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
-                    b.Property<int>("Points")
-                        .HasColumnType("int");
+                    b.Property<string>("ReferenceId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("ReferenceType")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<int>("Type")
                         .HasColumnType("int");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("PointWalletId", "CreatedAt");
+                    b.HasIndex("CreatedAt");
 
-                    b.ToTable("PointLedgers");
+                    b.HasIndex("PlatformWalletId");
+
+                    b.HasIndex("ReferenceId", "ReferenceType");
+
+                    b.ToTable("PlatformWalletTransactions", (string)null);
                 });
 
             modelBuilder.Entity("LECOMS.Data.Entities.PointWallet", b =>
@@ -1172,6 +1428,9 @@ namespace LECOMS.Data.Migrations
                     b.Property<byte>("Active")
                         .HasColumnType("tinyint");
 
+                    b.Property<int>("ApprovalStatus")
+                        .HasColumnType("int");
+
                     b.Property<string>("CategoryId")
                         .IsRequired()
                         .HasColumnType("nvarchar(450)");
@@ -1180,8 +1439,17 @@ namespace LECOMS.Data.Migrations
                         .HasMaxLength(1000)
                         .HasColumnType("nvarchar(1000)");
 
+                    b.Property<int?>("Height")
+                        .HasColumnType("int");
+
                     b.Property<DateTime>("LastUpdatedAt")
                         .HasColumnType("datetime2");
+
+                    b.Property<int?>("Length")
+                        .HasColumnType("int");
+
+                    b.Property<string>("ModeratorNote")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -1204,6 +1472,12 @@ namespace LECOMS.Data.Migrations
                         .HasColumnType("tinyint");
 
                     b.Property<int>("Stock")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Weight")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("Width")
                         .HasColumnType("int");
 
                     b.HasKey("Id");
@@ -1374,27 +1648,24 @@ namespace LECOMS.Data.Migrations
                     b.Property<string>("Id")
                         .HasColumnType("nvarchar(450)");
 
+                    b.Property<string>("AdminRejectReason")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("AdminRespondedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("AdminResponseBy")
+                        .HasColumnType("nvarchar(450)");
+
                     b.Property<string>("AttachmentUrls")
-                        .HasMaxLength(2000)
-                        .HasColumnType("nvarchar(2000)");
-
-                    b.Property<string>("FlagReason")
-                        .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)");
-
-                    b.Property<bool>("IsFlagged")
-                        .HasColumnType("bit");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("OrderId")
                         .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("ProcessNote")
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
-
-                    b.Property<DateTime?>("ProcessedAt")
-                        .HasColumnType("datetime2");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("ReasonDescription")
                         .IsRequired()
@@ -1408,6 +1679,12 @@ namespace LECOMS.Data.Migrations
                         .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
+                    b.Property<string>("RefundTransactionId")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("RefundedAt")
+                        .HasColumnType("datetime2");
+
                     b.Property<DateTime>("RequestedAt")
                         .HasColumnType("datetime2");
 
@@ -1416,8 +1693,7 @@ namespace LECOMS.Data.Migrations
                         .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("ShopRejectReason")
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime?>("ShopRespondedAt")
                         .HasColumnType("datetime2");
@@ -1432,6 +1708,8 @@ namespace LECOMS.Data.Migrations
                         .HasColumnType("int");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("AdminResponseBy");
 
                     b.HasIndex("OrderId");
 
@@ -1567,6 +1845,25 @@ namespace LECOMS.Data.Migrations
                         .HasMaxLength(500)
                         .HasColumnType("nvarchar(500)");
 
+                    b.Property<int>("DistrictId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("DistrictName")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<DateTime?>("GHNConnectedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("GHNShopId")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("GHNToken")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(200)
@@ -1593,6 +1890,14 @@ namespace LECOMS.Data.Migrations
                     b.Property<string>("PhoneNumber")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("ProvinceId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("ProvinceName")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
 
                     b.Property<string>("RejectedReason")
                         .HasColumnType("nvarchar(max)");
@@ -1625,6 +1930,16 @@ namespace LECOMS.Data.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("WardCode")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("WardName")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
                     b.HasKey("Id");
 
                     b.HasIndex("CategoryId");
@@ -1633,6 +1948,74 @@ namespace LECOMS.Data.Migrations
                         .IsUnique();
 
                     b.ToTable("Shops");
+                });
+
+            modelBuilder.Entity("LECOMS.Data.Entities.ShopAddress", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("ContactName")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("ContactPhone")
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("DetailAddress")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<int>("DistrictId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("DistrictName")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<bool>("IsDefault")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("ProvinceId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("ProvinceName")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<int>("ShopId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("WardCode")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("WardName")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ShopId");
+
+                    b.HasIndex("ShopId", "IsDefault");
+
+                    b.ToTable("ShopAddresses", (string)null);
                 });
 
             modelBuilder.Entity("LECOMS.Data.Entities.ShopWallet", b =>
@@ -1692,11 +2075,6 @@ namespace LECOMS.Data.Migrations
                         .HasMaxLength(500)
                         .HasColumnType("nvarchar(500)");
 
-                    b.Property<string>("OrderId")
-                        .IsRequired()
-                        .HasMaxLength(4000)
-                        .HasColumnType("nvarchar(4000)");
-
                     b.Property<string>("PayOSMetadata")
                         .HasMaxLength(4000)
                         .HasColumnType("nvarchar(4000)");
@@ -1736,6 +2114,10 @@ namespace LECOMS.Data.Migrations
                         .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
+                    b.Property<string>("VoucherCode")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
                     b.HasKey("Id");
 
                     b.HasIndex("CreatedAt");
@@ -1751,6 +2133,64 @@ namespace LECOMS.Data.Migrations
                     b.HasIndex("Status");
 
                     b.ToTable("Transactions", (string)null);
+                });
+
+            modelBuilder.Entity("LECOMS.Data.Entities.TransactionOrder", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("OrderId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("TransactionId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("OrderId");
+
+                    b.HasIndex("TransactionId");
+
+                    b.ToTable("TransactionOrders");
+                });
+
+            modelBuilder.Entity("LECOMS.Data.Entities.TransactionOrderBreakdown", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<decimal>("PlatformFeeAmount")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("ShopAmount")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("TotalAmount")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<string>("TransactionId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("TransactionOrderId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TransactionId");
+
+                    b.HasIndex("TransactionOrderId");
+
+                    b.ToTable("TransactionOrderBreakdowns");
                 });
 
             modelBuilder.Entity("LECOMS.Data.Entities.User", b =>
@@ -1847,6 +2287,46 @@ namespace LECOMS.Data.Migrations
                         .HasFilter("[UserName] IS NOT NULL");
 
                     b.ToTable("AspNetUsers", (string)null);
+                });
+
+            modelBuilder.Entity("LECOMS.Data.Entities.UserAchievementProgress", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<int>("AchievementDefinitionId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("CompletedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("CurrentValue")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("IsCompleted")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsRewardClaimed")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AchievementDefinitionId");
+
+                    b.HasIndex("UserId", "AchievementDefinitionId")
+                        .IsUnique();
+
+                    b.ToTable("UserAchievementProgresses");
                 });
 
             modelBuilder.Entity("LECOMS.Data.Entities.UserBadge", b =>
@@ -2014,6 +2494,12 @@ namespace LECOMS.Data.Migrations
                     b.Property<bool>("IsUsed")
                         .HasColumnType("bit");
 
+                    b.Property<string>("OrderId")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("UsedAt")
+                        .HasColumnType("datetime2");
+
                     b.Property<string>("UserId")
                         .IsRequired()
                         .HasColumnType("nvarchar(450)");
@@ -2037,25 +2523,39 @@ namespace LECOMS.Data.Migrations
                     b.Property<string>("Id")
                         .HasColumnType("nvarchar(450)");
 
-                    b.Property<byte>("Active")
-                        .HasColumnType("tinyint");
-
                     b.Property<string>("Code")
                         .IsRequired()
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
-                    b.Property<decimal?>("DiscountAmount")
+                    b.Property<int>("DiscountType")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("DiscountValue")
                         .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
-                    b.Property<int?>("DiscountPercent")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime?>("ExpiresAt")
+                    b.Property<DateTime?>("EndDate")
                         .HasColumnType("datetime2");
 
-                    b.Property<int?>("MaxUsagePerUser")
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<decimal?>("MaxDiscountAmount")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal?>("MinOrderAmount")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int>("QuantityAvailable")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("StartDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("UsageLimitPerUser")
                         .HasColumnType("int");
 
                     b.HasKey("Id");
@@ -2171,16 +2671,9 @@ namespace LECOMS.Data.Migrations
                     b.Property<DateTime?>("CompletedAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<string>("FailureReason")
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
-
                     b.Property<string>("Note")
                         .HasMaxLength(500)
                         .HasColumnType("nvarchar(500)");
-
-                    b.Property<DateTime?>("ProcessedAt")
-                        .HasColumnType("datetime2");
 
                     b.Property<string>("RejectionReason")
                         .HasMaxLength(500)
@@ -2198,10 +2691,6 @@ namespace LECOMS.Data.Migrations
 
                     b.Property<int>("Status")
                         .HasColumnType("int");
-
-                    b.Property<string>("TransactionReference")
-                        .HasMaxLength(255)
-                        .HasColumnType("nvarchar(255)");
 
                     b.HasKey("Id");
 
@@ -2349,6 +2838,40 @@ namespace LECOMS.Data.Migrations
                     b.HasKey("UserId", "LoginProvider", "Name");
 
                     b.ToTable("AspNetUserTokens", (string)null);
+                });
+
+            modelBuilder.Entity("PointLedger", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<int>("Amount")
+                        .HasColumnType("int");
+
+                    b.Property<int>("BalanceAfter")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Description")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("PointWalletId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<int>("Points")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Type")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("PointWalletId", "CreatedAt");
+
+                    b.ToTable("PointLedgers");
                 });
 
             modelBuilder.Entity("LECOMS.Data.Entities.Address", b =>
@@ -2583,6 +3106,71 @@ namespace LECOMS.Data.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("LECOMS.Data.Entities.Feedback", b =>
+                {
+                    b.HasOne("LECOMS.Data.Entities.Order", "Order")
+                        .WithMany()
+                        .HasForeignKey("OrderId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("LECOMS.Data.Entities.Product", "Product")
+                        .WithMany("Feedbacks")
+                        .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("LECOMS.Data.Entities.Shop", "Shop")
+                        .WithMany()
+                        .HasForeignKey("ShopId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("LECOMS.Data.Entities.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Order");
+
+                    b.Navigation("Product");
+
+                    b.Navigation("Shop");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("LECOMS.Data.Entities.FeedbackImage", b =>
+                {
+                    b.HasOne("LECOMS.Data.Entities.Feedback", "Feedback")
+                        .WithMany("Images")
+                        .HasForeignKey("FeedbackId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Feedback");
+                });
+
+            modelBuilder.Entity("LECOMS.Data.Entities.FeedbackReply", b =>
+                {
+                    b.HasOne("LECOMS.Data.Entities.Feedback", "Feedback")
+                        .WithOne("Reply")
+                        .HasForeignKey("LECOMS.Data.Entities.FeedbackReply", "FeedbackId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("LECOMS.Data.Entities.Shop", "Shop")
+                        .WithMany()
+                        .HasForeignKey("ShopId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Feedback");
+
+                    b.Navigation("Shop");
+                });
+
             modelBuilder.Entity("LECOMS.Data.Entities.LeaderboardEntry", b =>
                 {
                     b.HasOne("LECOMS.Data.Entities.Leaderboard", "Leaderboard")
@@ -2714,15 +3302,15 @@ namespace LECOMS.Data.Migrations
                     b.Navigation("Payment");
                 });
 
-            modelBuilder.Entity("LECOMS.Data.Entities.PointLedger", b =>
+            modelBuilder.Entity("LECOMS.Data.Entities.PlatformWalletTransaction", b =>
                 {
-                    b.HasOne("LECOMS.Data.Entities.PointWallet", "Wallet")
-                        .WithMany()
-                        .HasForeignKey("PointWalletId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                    b.HasOne("LECOMS.Data.Entities.PlatformWallet", "PlatformWallet")
+                        .WithMany("Transactions")
+                        .HasForeignKey("PlatformWalletId")
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("Wallet");
+                    b.Navigation("PlatformWallet");
                 });
 
             modelBuilder.Entity("LECOMS.Data.Entities.PointWallet", b =>
@@ -2768,6 +3356,11 @@ namespace LECOMS.Data.Migrations
 
             modelBuilder.Entity("LECOMS.Data.Entities.RefundRequest", b =>
                 {
+                    b.HasOne("LECOMS.Data.Entities.User", "AdminResponseByUser")
+                        .WithMany()
+                        .HasForeignKey("AdminResponseBy")
+                        .OnDelete(DeleteBehavior.Restrict);
+
                     b.HasOne("LECOMS.Data.Entities.Order", "Order")
                         .WithMany("RefundRequests")
                         .HasForeignKey("OrderId")
@@ -2785,6 +3378,8 @@ namespace LECOMS.Data.Migrations
                         .HasForeignKey("ShopResponseBy")
                         .OnDelete(DeleteBehavior.Restrict);
 
+                    b.Navigation("AdminResponseByUser");
+
                     b.Navigation("Order");
 
                     b.Navigation("RequestedByUser");
@@ -2795,7 +3390,7 @@ namespace LECOMS.Data.Migrations
             modelBuilder.Entity("LECOMS.Data.Entities.Review", b =>
                 {
                     b.HasOne("LECOMS.Data.Entities.Product", "Product")
-                        .WithMany("Reviews")
+                        .WithMany()
                         .HasForeignKey("ProductId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
@@ -2860,6 +3455,17 @@ namespace LECOMS.Data.Migrations
                     b.Navigation("Seller");
                 });
 
+            modelBuilder.Entity("LECOMS.Data.Entities.ShopAddress", b =>
+                {
+                    b.HasOne("LECOMS.Data.Entities.Shop", "Shop")
+                        .WithMany()
+                        .HasForeignKey("ShopId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Shop");
+                });
+
             modelBuilder.Entity("LECOMS.Data.Entities.ShopWallet", b =>
                 {
                     b.HasOne("LECOMS.Data.Entities.Shop", "Shop")
@@ -2869,6 +3475,60 @@ namespace LECOMS.Data.Migrations
                         .IsRequired();
 
                     b.Navigation("Shop");
+                });
+
+            modelBuilder.Entity("LECOMS.Data.Entities.TransactionOrder", b =>
+                {
+                    b.HasOne("LECOMS.Data.Entities.Order", "Order")
+                        .WithMany("TransactionOrders")
+                        .HasForeignKey("OrderId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("LECOMS.Data.Entities.Transaction", "Transaction")
+                        .WithMany("TransactionOrders")
+                        .HasForeignKey("TransactionId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Order");
+
+                    b.Navigation("Transaction");
+                });
+
+            modelBuilder.Entity("LECOMS.Data.Entities.TransactionOrderBreakdown", b =>
+                {
+                    b.HasOne("LECOMS.Data.Entities.Transaction", null)
+                        .WithMany("Breakdowns")
+                        .HasForeignKey("TransactionId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("LECOMS.Data.Entities.TransactionOrder", "TransactionOrder")
+                        .WithMany()
+                        .HasForeignKey("TransactionOrderId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("TransactionOrder");
+                });
+
+            modelBuilder.Entity("LECOMS.Data.Entities.UserAchievementProgress", b =>
+                {
+                    b.HasOne("LECOMS.Data.Entities.AchievementDefinition", "Achievement")
+                        .WithMany()
+                        .HasForeignKey("AchievementDefinitionId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("LECOMS.Data.Entities.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Achievement");
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("LECOMS.Data.Entities.UserBadge", b =>
@@ -3073,6 +3733,17 @@ namespace LECOMS.Data.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("PointLedger", b =>
+                {
+                    b.HasOne("LECOMS.Data.Entities.PointWallet", "Wallet")
+                        .WithMany()
+                        .HasForeignKey("PointWalletId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Wallet");
+                });
+
             modelBuilder.Entity("LECOMS.Data.Entities.Cart", b =>
                 {
                     b.Navigation("Items");
@@ -3116,6 +3787,14 @@ namespace LECOMS.Data.Migrations
                     b.Navigation("WithdrawalRequests");
                 });
 
+            modelBuilder.Entity("LECOMS.Data.Entities.Feedback", b =>
+                {
+                    b.Navigation("Images");
+
+                    b.Navigation("Reply")
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("LECOMS.Data.Entities.Leaderboard", b =>
                 {
                     b.Navigation("Entries");
@@ -3135,6 +3814,8 @@ namespace LECOMS.Data.Migrations
                     b.Navigation("RefundRequests");
 
                     b.Navigation("Shipments");
+
+                    b.Navigation("TransactionOrders");
                 });
 
             modelBuilder.Entity("LECOMS.Data.Entities.Payment", b =>
@@ -3142,13 +3823,18 @@ namespace LECOMS.Data.Migrations
                     b.Navigation("Attempts");
                 });
 
+            modelBuilder.Entity("LECOMS.Data.Entities.PlatformWallet", b =>
+                {
+                    b.Navigation("Transactions");
+                });
+
             modelBuilder.Entity("LECOMS.Data.Entities.Product", b =>
                 {
                     b.Navigation("CourseProducts");
 
-                    b.Navigation("Images");
+                    b.Navigation("Feedbacks");
 
-                    b.Navigation("Reviews");
+                    b.Navigation("Images");
                 });
 
             modelBuilder.Entity("LECOMS.Data.Entities.ProductCategory", b =>
@@ -3173,6 +3859,13 @@ namespace LECOMS.Data.Migrations
                     b.Navigation("Transactions");
 
                     b.Navigation("WithdrawalRequests");
+                });
+
+            modelBuilder.Entity("LECOMS.Data.Entities.Transaction", b =>
+                {
+                    b.Navigation("Breakdowns");
+
+                    b.Navigation("TransactionOrders");
                 });
 
             modelBuilder.Entity("LECOMS.Data.Entities.User", b =>

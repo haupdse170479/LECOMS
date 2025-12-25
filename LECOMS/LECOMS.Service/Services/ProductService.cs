@@ -49,7 +49,7 @@ namespace LECOMS.Service.Services
         {
             var product = await _uow.Products.GetAsync(
                 p => p.Id == id,
-                includeProperties: "Category,Images,Shop,Feedback"
+                includeProperties: "Category,Images,Shop,Feedbacks"
             );
 
             if (product == null)

@@ -12,6 +12,27 @@ namespace LECOMS.Data.Migrations
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.CreateTable(
+                name: "AchievementDefinitions",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Code = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
+                    Title = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false),
+                    Description = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true),
+                    Category = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
+                    ImageUrl = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true),
+                    TargetValue = table.Column<int>(type: "int", nullable: false),
+                    RewardXP = table.Column<int>(type: "int", nullable: false),
+                    RewardPoints = table.Column<int>(type: "int", nullable: false),
+                    Active = table.Column<bool>(type: "bit", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_AchievementDefinitions", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "AspNetRoles",
                 columns: table => new
                 {
@@ -147,6 +168,7 @@ namespace LECOMS.Data.Migrations
                     AutoApproveWithdrawal = table.Column<bool>(type: "bit", nullable: false),
                     MaxRefundDays = table.Column<int>(type: "int", nullable: false),
                     AutoApproveRefund = table.Column<bool>(type: "bit", nullable: false),
+                    SellerRefundResponseHours = table.Column<int>(type: "int", nullable: false),
                     PayOSEnvironment = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
                     PayOSClientId = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: true),
                     PayOSApiKey = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: true),
@@ -159,6 +181,23 @@ namespace LECOMS.Data.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_PlatformConfigs", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "PlatformWallets",
+                columns: table => new
+                {
+                    Id = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    Balance = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
+                    TotalCommissionEarned = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
+                    TotalCommissionRefunded = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
+                    TotalPayout = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    LastUpdated = table.Column<DateTime>(type: "datetime2", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_PlatformWallets", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -232,7 +271,6 @@ namespace LECOMS.Data.Migrations
                 columns: table => new
                 {
                     Id = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    OrderId = table.Column<string>(type: "nvarchar(4000)", maxLength: 4000, nullable: false),
                     TotalAmount = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
                     PlatformFeePercent = table.Column<decimal>(type: "decimal(5,2)", precision: 5, scale: 2, nullable: false),
                     PlatformFeeAmount = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
@@ -245,7 +283,8 @@ namespace LECOMS.Data.Migrations
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
                     CompletedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
                     PayOSMetadata = table.Column<string>(type: "nvarchar(4000)", maxLength: 4000, nullable: true),
-                    Note = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true)
+                    Note = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true),
+                    VoucherCode = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: true)
                 },
                 constraints: table =>
                 {
@@ -258,11 +297,15 @@ namespace LECOMS.Data.Migrations
                 {
                     Id = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     Code = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
-                    DiscountAmount = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: true),
-                    DiscountPercent = table.Column<int>(type: "int", nullable: true),
-                    ExpiresAt = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    MaxUsagePerUser = table.Column<int>(type: "int", nullable: true),
-                    Active = table.Column<byte>(type: "tinyint", nullable: false)
+                    DiscountType = table.Column<int>(type: "int", nullable: false),
+                    DiscountValue = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
+                    MaxDiscountAmount = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: true),
+                    MinOrderAmount = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: true),
+                    UsageLimitPerUser = table.Column<int>(type: "int", nullable: true),
+                    QuantityAvailable = table.Column<int>(type: "int", nullable: false),
+                    StartDate = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    EndDate = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    IsActive = table.Column<bool>(type: "bit", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -428,7 +471,9 @@ namespace LECOMS.Data.Migrations
                     UserId = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     Title = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false),
                     Body = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    ApprovalStatus = table.Column<int>(type: "int", nullable: false),
+                    ModeratorNote = table.Column<string>(type: "nvarchar(max)", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -512,6 +557,37 @@ namespace LECOMS.Data.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "UserAchievementProgresses",
+                columns: table => new
+                {
+                    Id = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    UserId = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    AchievementDefinitionId = table.Column<int>(type: "int", nullable: false),
+                    CurrentValue = table.Column<int>(type: "int", nullable: false),
+                    IsCompleted = table.Column<bool>(type: "bit", nullable: false),
+                    IsRewardClaimed = table.Column<bool>(type: "bit", nullable: false),
+                    CompletedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_UserAchievementProgresses", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_UserAchievementProgresses_AchievementDefinitions_AchievementDefinitionId",
+                        column: x => x.AchievementDefinitionId,
+                        principalTable: "AchievementDefinitions",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_UserAchievementProgresses_AspNetUsers_UserId",
+                        column: x => x.UserId,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "UserBadges",
                 columns: table => new
                 {
@@ -575,6 +651,12 @@ namespace LECOMS.Data.Migrations
                     Name = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false),
                     Description = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true),
                     PhoneNumber = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    ProvinceId = table.Column<int>(type: "int", nullable: false),
+                    ProvinceName = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
+                    DistrictId = table.Column<int>(type: "int", nullable: false),
+                    DistrictName = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
+                    WardCode = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
+                    WardName = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
                     Address = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: false),
                     BusinessType = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     OwnershipDocumentUrl = table.Column<string>(type: "nvarchar(max)", nullable: true),
@@ -594,7 +676,10 @@ namespace LECOMS.Data.Migrations
                     RejectedReason = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
                     ApprovedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    SellerId = table.Column<string>(type: "nvarchar(450)", nullable: false)
+                    SellerId = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    GHNToken = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: true),
+                    GHNShopId = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: true),
+                    GHNConnectedAt = table.Column<DateTime>(type: "datetime2", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -638,6 +723,32 @@ namespace LECOMS.Data.Migrations
                         principalTable: "Leaderboards",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "PlatformWalletTransactions",
+                columns: table => new
+                {
+                    Id = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    PlatformWalletId = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    Amount = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
+                    Type = table.Column<int>(type: "int", nullable: false),
+                    BalanceBefore = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
+                    BalanceAfter = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
+                    ReferenceId = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    ReferenceType = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    Description = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_PlatformWalletTransactions", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_PlatformWalletTransactions_PlatformWallets_PlatformWalletId",
+                        column: x => x.PlatformWalletId,
+                        principalTable: "PlatformWallets",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -705,6 +816,8 @@ namespace LECOMS.Data.Migrations
                     UserId = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     VoucherId = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     IsUsed = table.Column<bool>(type: "bit", nullable: false),
+                    UsedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    OrderId = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     AssignedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
                 },
                 constraints: table =>
@@ -794,11 +907,8 @@ namespace LECOMS.Data.Migrations
                     Status = table.Column<int>(type: "int", nullable: false),
                     ApprovedBy = table.Column<string>(type: "nvarchar(450)", nullable: true),
                     ApprovedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    RejectionReason = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true),
-                    ProcessedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    TransactionReference = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: true),
                     CompletedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    FailureReason = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true),
+                    RejectionReason = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true),
                     RequestedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
                     Note = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true),
                     AdminNote = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true)
@@ -833,7 +943,9 @@ namespace LECOMS.Data.Migrations
                     Id = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     PointWalletId = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     Type = table.Column<int>(type: "int", nullable: false),
+                    Amount = table.Column<int>(type: "int", nullable: false),
                     Points = table.Column<int>(type: "int", nullable: false),
+                    Description = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     BalanceAfter = table.Column<int>(type: "int", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
                 },
@@ -859,7 +971,9 @@ namespace LECOMS.Data.Migrations
                     CourseThumbnail = table.Column<string>(type: "nvarchar(1000)", maxLength: 1000, nullable: true),
                     CategoryId = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     ShopId = table.Column<int>(type: "int", nullable: false),
-                    Active = table.Column<byte>(type: "tinyint", nullable: false)
+                    Active = table.Column<byte>(type: "tinyint", nullable: false),
+                    ApprovalStatus = table.Column<int>(type: "int", nullable: false),
+                    ModeratorNote = table.Column<string>(type: "nvarchar(max)", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -889,6 +1003,13 @@ namespace LECOMS.Data.Migrations
                     ShipToName = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: false),
                     ShipToPhone = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: false),
                     ShipToAddress = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: false),
+                    ToProvinceId = table.Column<int>(type: "int", nullable: true),
+                    ToProvinceName = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: true),
+                    ToDistrictId = table.Column<int>(type: "int", nullable: false),
+                    ToDistrictName = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: true),
+                    ToWardCode = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
+                    ToWardName = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: true),
+                    ServiceTypeId = table.Column<int>(type: "int", nullable: false),
                     Subtotal = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
                     ShippingFee = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
                     Discount = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
@@ -897,7 +1018,12 @@ namespace LECOMS.Data.Migrations
                     PaymentStatus = table.Column<int>(type: "int", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
                     CompletedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    BalanceReleased = table.Column<bool>(type: "bit", nullable: false)
+                    EstimatedDeliveryDate = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    EstimatedDeliveryText = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: true),
+                    ShippingTrackingCode = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: true),
+                    ShippingStatus = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: true),
+                    BalanceReleased = table.Column<bool>(type: "bit", nullable: false),
+                    VoucherCodeUsed = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: true)
                 },
                 constraints: table =>
                 {
@@ -928,9 +1054,15 @@ namespace LECOMS.Data.Migrations
                     ShopId = table.Column<int>(type: "int", nullable: false),
                     Price = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
                     Stock = table.Column<int>(type: "int", nullable: false),
+                    Weight = table.Column<int>(type: "int", nullable: false),
+                    Length = table.Column<int>(type: "int", nullable: true),
+                    Width = table.Column<int>(type: "int", nullable: true),
+                    Height = table.Column<int>(type: "int", nullable: true),
                     Status = table.Column<byte>(type: "tinyint", nullable: false),
                     LastUpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    Active = table.Column<byte>(type: "tinyint", nullable: false)
+                    Active = table.Column<byte>(type: "tinyint", nullable: false),
+                    ApprovalStatus = table.Column<int>(type: "int", nullable: false),
+                    ModeratorNote = table.Column<string>(type: "nvarchar(max)", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -947,6 +1079,37 @@ namespace LECOMS.Data.Migrations
                         principalTable: "Shops",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "ShopAddresses",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    ShopId = table.Column<int>(type: "int", nullable: false),
+                    ProvinceId = table.Column<int>(type: "int", nullable: false),
+                    ProvinceName = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false),
+                    DistrictId = table.Column<int>(type: "int", nullable: false),
+                    DistrictName = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false),
+                    WardCode = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
+                    WardName = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false),
+                    DetailAddress = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: false),
+                    IsDefault = table.Column<bool>(type: "bit", nullable: false),
+                    ContactName = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: true),
+                    ContactPhone = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: true),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_ShopAddresses", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_ShopAddresses_Shops_ShopId",
+                        column: x => x.ShopId,
+                        principalTable: "Shops",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -1008,7 +1171,9 @@ namespace LECOMS.Data.Migrations
                     Id = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     CourseId = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     Title = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false),
-                    OrderIndex = table.Column<int>(type: "int", nullable: false)
+                    OrderIndex = table.Column<int>(type: "int", nullable: false),
+                    ApprovalStatus = table.Column<int>(type: "int", nullable: false),
+                    ModeratorNote = table.Column<string>(type: "nvarchar(max)", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -1083,19 +1248,27 @@ namespace LECOMS.Data.Migrations
                     ReasonDescription = table.Column<string>(type: "nvarchar(1000)", maxLength: 1000, nullable: false),
                     Type = table.Column<int>(type: "int", nullable: false),
                     RefundAmount = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
-                    AttachmentUrls = table.Column<string>(type: "nvarchar(2000)", maxLength: 2000, nullable: true),
+                    AttachmentUrls = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Status = table.Column<int>(type: "int", nullable: false),
                     ShopResponseBy = table.Column<string>(type: "nvarchar(450)", nullable: true),
                     ShopRespondedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    ShopRejectReason = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true),
-                    ProcessedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    ProcessNote = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true),
-                    IsFlagged = table.Column<bool>(type: "bit", nullable: false),
-                    FlagReason = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: true)
+                    ShopRejectReason = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    AdminResponseBy = table.Column<string>(type: "nvarchar(450)", nullable: true),
+                    AdminRespondedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    AdminRejectReason = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    RefundedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    RefundTransactionId = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    ProcessNote = table.Column<string>(type: "nvarchar(max)", nullable: true)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_RefundRequests", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_RefundRequests_AspNetUsers_AdminResponseBy",
+                        column: x => x.AdminResponseBy,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
                         name: "FK_RefundRequests_AspNetUsers_RequestedBy",
                         column: x => x.RequestedBy,
@@ -1136,6 +1309,31 @@ namespace LECOMS.Data.Migrations
                         principalTable: "Orders",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "TransactionOrders",
+                columns: table => new
+                {
+                    Id = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    TransactionId = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    OrderId = table.Column<string>(type: "nvarchar(450)", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_TransactionOrders", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_TransactionOrders_Orders_OrderId",
+                        column: x => x.OrderId,
+                        principalTable: "Orders",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_TransactionOrders_Transactions_TransactionId",
+                        column: x => x.TransactionId,
+                        principalTable: "Transactions",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateTable(
@@ -1220,6 +1418,48 @@ namespace LECOMS.Data.Migrations
                         name: "FK_CourseProducts_Products_ProductId",
                         column: x => x.ProductId,
                         principalTable: "Products",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Feedbacks",
+                columns: table => new
+                {
+                    Id = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    OrderId = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    UserId = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    ShopId = table.Column<int>(type: "int", nullable: false),
+                    ProductId = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    Rating = table.Column<int>(type: "int", nullable: false),
+                    Content = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Feedbacks", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Feedbacks_AspNetUsers_UserId",
+                        column: x => x.UserId,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_Feedbacks_Orders_OrderId",
+                        column: x => x.OrderId,
+                        principalTable: "Orders",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_Feedbacks_Products_ProductId",
+                        column: x => x.ProductId,
+                        principalTable: "Products",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_Feedbacks_Shops_ShopId",
+                        column: x => x.ShopId,
+                        principalTable: "Shops",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
                 });
@@ -1344,11 +1584,8 @@ namespace LECOMS.Data.Migrations
                     Status = table.Column<int>(type: "int", nullable: false),
                     ApprovedBy = table.Column<string>(type: "nvarchar(450)", nullable: true),
                     ApprovedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    RejectionReason = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true),
-                    ProcessedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    TransactionReference = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: true),
                     CompletedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    FailureReason = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true),
+                    RejectionReason = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true),
                     RequestedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
                     Note = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true),
                     AdminNote = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true)
@@ -1386,7 +1623,9 @@ namespace LECOMS.Data.Migrations
                     Type = table.Column<int>(type: "int", nullable: false),
                     DurationSeconds = table.Column<int>(type: "int", nullable: true),
                     ContentUrl = table.Column<string>(type: "nvarchar(1000)", maxLength: 1000, nullable: true),
-                    OrderIndex = table.Column<int>(type: "int", nullable: false)
+                    OrderIndex = table.Column<int>(type: "int", nullable: false),
+                    ApprovalStatus = table.Column<int>(type: "int", nullable: false),
+                    ModeratorNote = table.Column<string>(type: "nvarchar(max)", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -1422,6 +1661,35 @@ namespace LECOMS.Data.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "TransactionOrderBreakdowns",
+                columns: table => new
+                {
+                    Id = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    TransactionOrderId = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    TotalAmount = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
+                    PlatformFeeAmount = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
+                    ShopAmount = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    TransactionId = table.Column<string>(type: "nvarchar(450)", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_TransactionOrderBreakdowns", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_TransactionOrderBreakdowns_TransactionOrders_TransactionOrderId",
+                        column: x => x.TransactionOrderId,
+                        principalTable: "TransactionOrders",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_TransactionOrderBreakdowns_Transactions_TransactionId",
+                        column: x => x.TransactionId,
+                        principalTable: "Transactions",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Messages",
                 columns: table => new
                 {
@@ -1441,6 +1709,52 @@ namespace LECOMS.Data.Migrations
                         principalTable: "Conversations",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "FeedbackImages",
+                columns: table => new
+                {
+                    Id = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    FeedbackId = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    Url = table.Column<string>(type: "nvarchar(max)", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_FeedbackImages", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_FeedbackImages_Feedbacks_FeedbackId",
+                        column: x => x.FeedbackId,
+                        principalTable: "Feedbacks",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "FeedbackReplies",
+                columns: table => new
+                {
+                    Id = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    FeedbackId = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    ShopId = table.Column<int>(type: "int", nullable: false),
+                    ReplyContent = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_FeedbackReplies", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_FeedbackReplies_Feedbacks_FeedbackId",
+                        column: x => x.FeedbackId,
+                        principalTable: "Feedbacks",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_FeedbackReplies_Shops_ShopId",
+                        column: x => x.ShopId,
+                        principalTable: "Shops",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateTable(
@@ -1494,10 +1808,38 @@ namespace LECOMS.Data.Migrations
                         onDelete: ReferentialAction.Restrict);
                 });
 
+            migrationBuilder.CreateTable(
+                name: "UserLessonProgresses",
+                columns: table => new
+                {
+                    Id = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    UserId = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    LessonId = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    IsCompleted = table.Column<bool>(type: "bit", nullable: false),
+                    CompletedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    XpEarned = table.Column<int>(type: "int", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_UserLessonProgresses", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_UserLessonProgresses_AspNetUsers_UserId",
+                        column: x => x.UserId,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_UserLessonProgresses_Lessons_LessonId",
+                        column: x => x.LessonId,
+                        principalTable: "Lessons",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
             migrationBuilder.InsertData(
                 table: "PlatformConfigs",
-                columns: new[] { "Id", "AutoApproveRefund", "AutoApproveWithdrawal", "DefaultCommissionRate", "EnableEmailNotification", "EnableSMSNotification", "LastUpdated", "LastUpdatedBy", "MaxRefundDays", "MaxWithdrawalAmount", "MinWithdrawalAmount", "OrderHoldingDays", "PayOSApiKey", "PayOSChecksumKey", "PayOSClientId", "PayOSEnvironment" },
-                values: new object[] { "PLATFORM_CONFIG_SINGLETON", false, false, 5.00m, true, false, new DateTime(2025, 11, 11, 4, 5, 30, 0, DateTimeKind.Utc), "haupdse170479", 30, 50000000m, 100000m, 7, null, null, null, "sandbox" });
+                columns: new[] { "Id", "AutoApproveRefund", "AutoApproveWithdrawal", "DefaultCommissionRate", "EnableEmailNotification", "EnableSMSNotification", "LastUpdated", "LastUpdatedBy", "MaxRefundDays", "MaxWithdrawalAmount", "MinWithdrawalAmount", "OrderHoldingDays", "PayOSApiKey", "PayOSChecksumKey", "PayOSClientId", "PayOSEnvironment", "SellerRefundResponseHours" },
+                values: new object[] { "PLATFORM_CONFIG_SINGLETON", false, false, 5.00m, true, false, new DateTime(2025, 11, 11, 4, 5, 30, 0, DateTimeKind.Utc), "haupdse170479", 30, 50000000m, 100000m, 7, null, null, null, "sandbox", 0 });
 
             migrationBuilder.CreateIndex(
                 name: "IX_Addresses_UserId_IsDefault",
@@ -1709,6 +2051,42 @@ namespace LECOMS.Data.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
+                name: "IX_FeedbackImages_FeedbackId",
+                table: "FeedbackImages",
+                column: "FeedbackId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_FeedbackReplies_FeedbackId",
+                table: "FeedbackReplies",
+                column: "FeedbackId",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_FeedbackReplies_ShopId",
+                table: "FeedbackReplies",
+                column: "ShopId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Feedbacks_OrderId",
+                table: "Feedbacks",
+                column: "OrderId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Feedbacks_ProductId",
+                table: "Feedbacks",
+                column: "ProductId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Feedbacks_ShopId",
+                table: "Feedbacks",
+                column: "ShopId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Feedbacks_UserId",
+                table: "Feedbacks",
+                column: "UserId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_LeaderboardEntries_LeaderboardId_UserId",
                 table: "LeaderboardEntries",
                 columns: new[] { "LeaderboardId", "UserId" },
@@ -1799,6 +2177,21 @@ namespace LECOMS.Data.Migrations
                 column: "OrderId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_PlatformWalletTransactions_CreatedAt",
+                table: "PlatformWalletTransactions",
+                column: "CreatedAt");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_PlatformWalletTransactions_PlatformWalletId",
+                table: "PlatformWalletTransactions",
+                column: "PlatformWalletId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_PlatformWalletTransactions_ReferenceId_ReferenceType",
+                table: "PlatformWalletTransactions",
+                columns: new[] { "ReferenceId", "ReferenceType" });
+
+            migrationBuilder.CreateIndex(
                 name: "IX_PointLedgers_PointWalletId_CreatedAt",
                 table: "PointLedgers",
                 columns: new[] { "PointWalletId", "CreatedAt" });
@@ -1834,6 +2227,11 @@ namespace LECOMS.Data.Migrations
                 table: "Products",
                 column: "Slug",
                 unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_RefundRequests_AdminResponseBy",
+                table: "RefundRequests",
+                column: "AdminResponseBy");
 
             migrationBuilder.CreateIndex(
                 name: "IX_RefundRequests_OrderId",
@@ -1887,6 +2285,16 @@ namespace LECOMS.Data.Migrations
                 column: "OrderId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_ShopAddresses_ShopId",
+                table: "ShopAddresses",
+                column: "ShopId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ShopAddresses_ShopId_IsDefault",
+                table: "ShopAddresses",
+                columns: new[] { "ShopId", "IsDefault" });
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Shops_CategoryId",
                 table: "Shops",
                 column: "CategoryId");
@@ -1919,6 +2327,26 @@ namespace LECOMS.Data.Migrations
                 column: "Type");
 
             migrationBuilder.CreateIndex(
+                name: "IX_TransactionOrderBreakdowns_TransactionId",
+                table: "TransactionOrderBreakdowns",
+                column: "TransactionId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_TransactionOrderBreakdowns_TransactionOrderId",
+                table: "TransactionOrderBreakdowns",
+                column: "TransactionOrderId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_TransactionOrders_OrderId",
+                table: "TransactionOrders",
+                column: "OrderId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_TransactionOrders_TransactionId",
+                table: "TransactionOrders",
+                column: "TransactionId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Transactions_CreatedAt",
                 table: "Transactions",
                 column: "CreatedAt");
@@ -1943,6 +2371,17 @@ namespace LECOMS.Data.Migrations
                 column: "Status");
 
             migrationBuilder.CreateIndex(
+                name: "IX_UserAchievementProgresses_AchievementDefinitionId",
+                table: "UserAchievementProgresses",
+                column: "AchievementDefinitionId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_UserAchievementProgresses_UserId_AchievementDefinitionId",
+                table: "UserAchievementProgresses",
+                columns: new[] { "UserId", "AchievementDefinitionId" },
+                unique: true);
+
+            migrationBuilder.CreateIndex(
                 name: "IX_UserBadges_BadgeId",
                 table: "UserBadges",
                 column: "BadgeId");
@@ -1962,6 +2401,16 @@ namespace LECOMS.Data.Migrations
                 name: "IX_UserBoosters_UserId_BoosterId_AcquiredAt",
                 table: "UserBoosters",
                 columns: new[] { "UserId", "BoosterId", "AcquiredAt" });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_UserLessonProgresses_LessonId",
+                table: "UserLessonProgresses",
+                column: "LessonId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_UserLessonProgresses_UserId",
+                table: "UserLessonProgresses",
+                column: "UserId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_UserQuestProgresses_QuestDefinitionId",
@@ -2073,6 +2522,12 @@ namespace LECOMS.Data.Migrations
                 name: "Enrollments");
 
             migrationBuilder.DropTable(
+                name: "FeedbackImages");
+
+            migrationBuilder.DropTable(
+                name: "FeedbackReplies");
+
+            migrationBuilder.DropTable(
                 name: "LeaderboardEntries");
 
             migrationBuilder.DropTable(
@@ -2089,6 +2544,9 @@ namespace LECOMS.Data.Migrations
 
             migrationBuilder.DropTable(
                 name: "PlatformConfigs");
+
+            migrationBuilder.DropTable(
+                name: "PlatformWalletTransactions");
 
             migrationBuilder.DropTable(
                 name: "PointLedgers");
@@ -2109,16 +2567,25 @@ namespace LECOMS.Data.Migrations
                 name: "ShipmentItems");
 
             migrationBuilder.DropTable(
+                name: "ShopAddresses");
+
+            migrationBuilder.DropTable(
                 name: "ShopWalletTransactions");
 
             migrationBuilder.DropTable(
-                name: "Transactions");
+                name: "TransactionOrderBreakdowns");
+
+            migrationBuilder.DropTable(
+                name: "UserAchievementProgresses");
 
             migrationBuilder.DropTable(
                 name: "UserBadges");
 
             migrationBuilder.DropTable(
                 name: "UserBoosters");
+
+            migrationBuilder.DropTable(
+                name: "UserLessonProgresses");
 
             migrationBuilder.DropTable(
                 name: "UserQuestProgresses");
@@ -2145,16 +2612,19 @@ namespace LECOMS.Data.Migrations
                 name: "CustomerWallets");
 
             migrationBuilder.DropTable(
-                name: "Leaderboards");
+                name: "Feedbacks");
 
             migrationBuilder.DropTable(
-                name: "Lessons");
+                name: "Leaderboards");
 
             migrationBuilder.DropTable(
                 name: "Conversations");
 
             migrationBuilder.DropTable(
                 name: "Payments");
+
+            migrationBuilder.DropTable(
+                name: "PlatformWallets");
 
             migrationBuilder.DropTable(
                 name: "PointWallets");
@@ -2166,10 +2636,19 @@ namespace LECOMS.Data.Migrations
                 name: "Shipments");
 
             migrationBuilder.DropTable(
+                name: "TransactionOrders");
+
+            migrationBuilder.DropTable(
+                name: "AchievementDefinitions");
+
+            migrationBuilder.DropTable(
                 name: "Badges");
 
             migrationBuilder.DropTable(
                 name: "Boosters");
+
+            migrationBuilder.DropTable(
+                name: "Lessons");
 
             migrationBuilder.DropTable(
                 name: "QuestDefinitions");
@@ -2184,19 +2663,22 @@ namespace LECOMS.Data.Migrations
                 name: "ShopWallets");
 
             migrationBuilder.DropTable(
-                name: "CourseSections");
-
-            migrationBuilder.DropTable(
                 name: "Products");
 
             migrationBuilder.DropTable(
                 name: "Orders");
 
             migrationBuilder.DropTable(
-                name: "Courses");
+                name: "Transactions");
+
+            migrationBuilder.DropTable(
+                name: "CourseSections");
 
             migrationBuilder.DropTable(
                 name: "ProductCategories");
+
+            migrationBuilder.DropTable(
+                name: "Courses");
 
             migrationBuilder.DropTable(
                 name: "Shops");
